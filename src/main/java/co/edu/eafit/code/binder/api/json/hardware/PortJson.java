@@ -12,16 +12,23 @@ public class PortJson {
     private String label;
     private String type;
 
-    private String pin;
+    private String[] pin;
     private String initialValue;
+    private String subType;
 
-    public String getPin() {
+    public String[] getPins() {
 
-        if (getType().isDigital() && pin.contains("D"))
-            return pin.replace("D", "");
+        String[] result = new String[pin.length];
 
-        return pin;
+        for (int i = 0; i < pin.length; i++)
+            result[i] = pin[i].replaceAll("D", "");
 
+        return result;
+
+    }
+
+    public String getSubType() {
+        return subType;
     }
 
     public PortComponentType getType() {

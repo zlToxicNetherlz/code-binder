@@ -1,6 +1,6 @@
 package co.edu.eafit.code.binder.api.json.binding.relations;
 
-import co.edu.eafit.code.binder.api.json.binding.RelationshipJson;
+import co.edu.eafit.code.binder.api.json.RelationshipJson;
 import lombok.Getter;
 import lombok.ToString;
 

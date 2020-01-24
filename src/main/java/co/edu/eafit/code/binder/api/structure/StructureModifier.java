@@ -4,7 +4,9 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.model.pins.AnalogPi
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.pins.DigitalPin;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchFunction;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchOperation;
+import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchPreprocessor;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchVariable;
+import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.SketchLibraryVariable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,9 @@ public class StructureModifier {
     private Map<String, DigitalPin> sketchDigitalPins;
     private Map<String, AnalogPin> sketchAnalogPins;
 
+    private Map<String, SketchPreprocessor> sketchPreprocessors;
     private Map<String, SketchVariable> sketchVariables;
+    private Map<String, SketchLibraryVariable> sketchLibraryVariables;
     private Map<String, SketchOperation> sketchOperations;
     private Map<String, SketchFunction> sketchFunctions;
 
@@ -23,9 +27,11 @@ public class StructureModifier {
         this.sketchDigitalPins = new HashMap<>();
         this.sketchAnalogPins = new HashMap<>();
 
+        this.sketchPreprocessors = new HashMap<>();
         this.sketchFunctions = new HashMap<>();
         this.sketchOperations = new HashMap<>();
         this.sketchVariables = new HashMap<>();
+        this.sketchLibraryVariables = new HashMap<>();
 
     }
 
@@ -37,12 +43,32 @@ public class StructureModifier {
         sketchAnalogPins.put(id, analogPin);
     }
 
+    public SketchPreprocessor getOrPut(String id, SketchPreprocessor directive) {
+
+        if (sketchPreprocessors.containsKey(id))
+            return sketchPreprocessors.get(id);
+
+        sketchPreprocessors.put(id, directive);
+        return directive;
+
+    }
+
     public SketchVariable getOrPut(String id, SketchVariable variable) {
 
         if (sketchVariables.containsKey(id))
             return sketchVariables.get(id);
 
         sketchVariables.put(id, variable);
+        return variable;
+
+    }
+
+    public SketchLibraryVariable getOrPut(String id, SketchLibraryVariable variable) {
+
+        if (sketchLibraryVariables.containsKey(id))
+            return sketchLibraryVariables.get(id);
+
+        sketchLibraryVariables.put(id, variable);
         return variable;
 
     }
@@ -67,8 +93,16 @@ public class StructureModifier {
 
     }
 
+    public <E extends SketchPreprocessor> E getPreprocessor(String id) {
+        return (E) sketchPreprocessors.get(id);
+    }
+
     public <E extends SketchVariable> E getVariable(String id) {
         return (E) sketchVariables.get(id);
+    }
+
+    public <E extends SketchLibraryVariable> E getLibraryVariable(String id) {
+        return (E) sketchLibraryVariables.get(id);
     }
 
     public <E extends SketchFunction> E getFunction(String id) {

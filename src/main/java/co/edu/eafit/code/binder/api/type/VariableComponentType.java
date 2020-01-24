@@ -4,6 +4,7 @@ public enum VariableComponentType {
 
     ANALOG_VARIABLE("analogVariable"),
     DIGITAL_VARIABLE("digitalVariable"),
+    STRING_VARIABLE("stringVariable")
 
     ;
 

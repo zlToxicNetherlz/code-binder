@@ -8,5 +8,7 @@ import lombok.ToString;
 public class CommonPhaseJson {
 
     private String activity;
+    private String execution;
+    private int time;
 
 }

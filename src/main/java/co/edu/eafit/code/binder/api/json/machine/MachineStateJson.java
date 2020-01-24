@@ -1,5 +1,6 @@
 package co.edu.eafit.code.binder.api.json.machine;
 
+import co.edu.eafit.code.binder.api.type.StateComponentType;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -15,8 +16,12 @@ public class MachineStateJson {
         return id;
     }
 
-    public String getType() {
-        return type;
+    public StateComponentType getType() {
+        return StateComponentType.getType(type);
+    }
+
+    public String getAsFlag() {
+        return "FLAG" + "_" + getLabel().toUpperCase();
     }
 
     public String getLabel() {

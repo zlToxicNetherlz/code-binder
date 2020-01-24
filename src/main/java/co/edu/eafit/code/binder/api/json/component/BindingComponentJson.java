@@ -1,10 +1,10 @@
 package co.edu.eafit.code.binder.api.json.component;
 
 import co.edu.eafit.code.binder.api.json.ComponentJson;
+import co.edu.eafit.code.binder.api.json.binding.*;
 import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
-import co.edu.eafit.code.binder.api.json.binding.instruction.*;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
 import co.edu.eafit.code.binder.api.structure.BindingComponent;
 import co.edu.eafit.code.binder.api.type.BindingComponentType;

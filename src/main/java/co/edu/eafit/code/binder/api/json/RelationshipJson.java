@@ -1,4 +1,4 @@
-package co.edu.eafit.code.binder.api.json.binding;
+package co.edu.eafit.code.binder.api.json;
 
 import lombok.Getter;
 import lombok.ToString;

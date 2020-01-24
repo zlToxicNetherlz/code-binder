@@ -1,9 +1,9 @@
 package co.edu.eafit.code.binder.api.type;
 
+import co.edu.eafit.code.binder.api.json.binding.*;
 import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
-import co.edu.eafit.code.binder.api.json.binding.instruction.*;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
 
@@ -44,7 +44,7 @@ public enum BindingComponentType {
         this.clazz = clazz;
     }
 
-    public <E> E getGenericComponent(BindingComponentJson componentJson) throws NoSuchFieldException, IllegalAccessException {
+    public <E> E getGenericComponent(BindingComponentJson componentJson) throws IllegalAccessException {
 
         for (Field cacheField : componentJson.getClass().getDeclaredFields())
             if (Modifier.isPrivate(cacheField.getModifiers())) {
@@ -75,7 +75,7 @@ public enum BindingComponentType {
                 if (cacheComponent != null)
                     return new AbstractMap.SimpleEntry<>(type, cacheComponent);
 
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
 
