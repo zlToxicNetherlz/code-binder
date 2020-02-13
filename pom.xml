@@ -36,15 +36,37 @@
         </dependency>
 
         <dependency>
-            <groupId>co.edu.eafit</groupId>
-            <artifactId>code-generator</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>
-                C:/Users/abrah/OneDrive/Universidad EAFIT/Semilleros/Desarrollo de
-                Software/Proyectos/common-code-generator/target/code-generator-1.0-SNAPSHOT.jar
-            </systemPath>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.plugface/plugface-core -->
+        <dependency>
+            <groupId>org.plugface</groupId>
+            <artifactId>plugface-core</artifactId>
+            <version>0.7.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.4.26.v20200117</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.4.26.v20200117</version>
+        </dependency>
+
+
+
+
+
 
     </dependencies>
 

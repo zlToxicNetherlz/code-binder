@@ -1,15 +1,10 @@
 package co.edu.eafit.code.binder.api.json.hardware;
 
-import lombok.Getter;
-import lombok.ToString;
+import co.edu.eafit.code.binder.api.type.PortComponentType;
 
-@ToString
-@Getter
-public class BoardJson {
+public class PinJson {
 
     private String id;
     private String label;
     private String type;
-    private PinJson[] pins;
-
 }
