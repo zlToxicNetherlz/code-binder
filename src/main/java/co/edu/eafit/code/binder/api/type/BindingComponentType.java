@@ -5,6 +5,7 @@ import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
+import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
 
 import java.lang.reflect.Field;
@@ -26,12 +27,14 @@ public enum BindingComponentType {
     CONTROL_ACTION("controlAction", ControlActionJson.class),
 
     STATE_ACTIVITY("relationship_state_activity", StateActivityJson.class),
-    ACTIVITY_WRITE("relationship_activity_writeAction", ActivityWriteJson.class),
+    ACTIVITY_ACTION("relationship_activity_action", ActivityActionJson.class),
+    DEVICE_ACTION("relationship_device_action", DeviceActionJson.class),
     WRITE_PORT("relationship_writeAction_port", WritePortJson.class),
     CONTROL_ACTION_PORT("relationship_controlAction_port", ControlActionPortJson.class),
     OPERATOR_TRANSITION("relationship_logicalOperator_transition", OperatorTransitionJson.class),
     OPERATOR_PREDICATE("relationship_logicalOperator_predicate", OperatorPredicateJson.class),
-    PREDICATE_READ("relationship_predicate_readActions", PredicateReadJson.class),
+    PREDICATE_VARIABLES("relationship_predicate_variables", PredicateVariablesJson.class),
+    ACTION_VARIABLE("relationship_action_variable", ActionVariableJson.class),
     READ_PORT("relationship_readAction_port", ReadPortJson.class),
 
     ;

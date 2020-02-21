@@ -5,11 +5,11 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class WriteActionJson {
+public class ActionArgumentJson {
 
     private String id;
     private String label;
+    private String type;
     private String subType;
-    private ActionArgumentJson[] arguments;
 
 }

@@ -1,6 +1,9 @@
 package co.edu.eafit.code.binder.api.processors;
 
+import co.edu.eafit.code.binder.api.json.binding.relations.hardware.DeviceBoardJson;
 import co.edu.eafit.code.binder.api.json.component.HardwareComponentJson;
+import co.edu.eafit.code.binder.api.json.hardware.DeviceJson;
+import co.edu.eafit.code.binder.api.json.hardware.PinJson;
 import co.edu.eafit.code.binder.api.json.hardware.PortJson;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
 import co.edu.eafit.code.binder.api.type.PortComponentType;
@@ -13,6 +16,7 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preprocessor
 import co.edu.eafit.code.generator.metamodel.arduino.classes.type.PinMode;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,19 +34,56 @@ public class HardwareProcessor extends Processor<HardwareComponentJson> {
 
     @Override
     public void compose(List<HardwareComponentJson> componentJson, ArduinoUnoBoard board) {
+        ArrayList<PinJson> boardPins=new ArrayList<PinJson>();
+        ArrayList<PinJson> devicePins=new ArrayList<PinJson>();
 
         for (HardwareComponentJson hardwareComponentJson : componentJson) {
-
-            if (hardwareComponentJson.isBoard())
-                continue;
-
-            mapSketchPort(hardwareComponentJson.getPort(), board);
-
+            if (hardwareComponentJson.isBoard()){
+                for (PinJson pin: hardwareComponentJson.getBoard().getPins()) {
+                    boardPins.add(pin);
+                }
+            }
+            if (hardwareComponentJson.isDevice()){
+                for (PinJson pin: hardwareComponentJson.getDevice().getPins()) {
+                    devicePins.add(pin);
+                }
+            }
         }
 
+        for (HardwareComponentJson hardwareComponentJson : componentJson) {
+            if (hardwareComponentJson.isRelationshipDeviceBoard()){
+                DeviceBoardJson relation = hardwareComponentJson.getRelationshipDeviceBoard();
+                PinJson pinDevice=null;
+                for (PinJson pin: devicePins) {
+                    if (pin.getId().equals(relation.getPinDevice())){
+                        pinDevice=pin;
+                        break;
+                    }
+                }
+                PinJson pinBoard=null;
+                for (PinJson pin: boardPins) {
+                    if (pin.getId().equals(relation.getPinBoard())){
+                        pinBoard=pin;
+                        break;
+                    }
+                }
+
+               // PinMode mode = pinDevice.getMode().equals("input") ? PinMode.INPUT : PinMode.OUTPUT;
+                PinMode mode = PinMode.OUTPUT; //esto lo debe cargar de la librería del dispositivo
+                String p=pinBoard.getLabel();
+                String l=relation.getId() + "_" + p;
+                if (pinBoard.getType().equals("digital")){
+                    getStructure().put(pinBoard.getId(), board.useDigitalPin(p, l, mode));
+                }else if (pinBoard.getType().equals("analog")){
+                    getStructure().put(pinBoard.getId(), board.useAnalogPin(p, l, mode));
+                }else if (pinBoard.getType().equals("pmw")){
+
+                }
+            }
+        }
     }
 
-    public void mapSketchPort(PortJson port, ArduinoUnoBoard board) {
+    public void mapSketchPortOld(PortJson port, ArduinoUnoBoard board) {
 
         PortComponentType type = port.getType();
         PinMode mode = type.isSensor() ? PinMode.INPUT : PinMode.OUTPUT;
