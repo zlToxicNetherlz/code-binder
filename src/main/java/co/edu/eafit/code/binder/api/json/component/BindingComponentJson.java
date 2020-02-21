@@ -6,6 +6,7 @@ import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
+import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionResultJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.structure.BindingComponent;
 import co.edu.eafit.code.binder.api.type.BindingComponentType;
@@ -38,6 +39,7 @@ public class BindingComponentJson extends ComponentJson {
     private ReadPortJson relationship_readAction_port;
     private DeviceActionJson relationship_device_action;
     private ActionVariableJson relationship_action_variable;
+    private ActionResultJson relationship_action_result;
 
     public <E> BindingComponent getComponent() {
         Map.Entry<BindingComponentType, E> entry = BindingComponentType.getComponent(this);

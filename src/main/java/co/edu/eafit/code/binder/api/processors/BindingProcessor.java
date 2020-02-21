@@ -9,6 +9,7 @@ import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonExecutionA
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPhaseJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPredicateJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonWriteActionJson;
+import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionResultJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
 import co.edu.eafit.code.binder.api.structure.BindingComponent;
@@ -34,8 +35,10 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preloads.Ske
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preprocessor.SketchDefineDirective;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.*;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.operator.SketchNumberOperator;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import lombok.Getter;
 
+import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,6 +57,8 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
     private LinkedList<ActionVariableJson> actionVariableJsons;
     private LinkedList<ControlActionPortJson> controlActionPortJsons;
     private LinkedList<VariableJson> variableJsons;
+    private LinkedList<ActionResultJson> actionResultJsons;
+    private LinkedList<DeviceActionJson> deviceActionJsons;
 
     private LinkedList<WriteActionData> writeActionDatas;
     private LinkedList<ReadActionData> readActionDatas;
@@ -77,6 +82,8 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
         this.controlActionPortJsons = new LinkedList<>();
         this.variableJsons = new LinkedList<>();
         this.actionVariableJsons=new LinkedList<>();
+        this.actionResultJsons=new LinkedList<>();
+        this.deviceActionJsons=new LinkedList<>();
 
         this.timerDatas = new LinkedList<>();
         this.writeActionDatas = new LinkedList<>();
@@ -162,12 +169,18 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     timerDatas.add(timerData);
                     break;
 
+                case ACTION_RESULT:
+                    ActionResultJson actionResultJson = bindingComponent.getGenericComponent();
+                    actionResultJsons.add(actionResultJson);
+                    break;
+
                 case READ_ACTION:
 
                     ReadActionJson readActionJson = bindingComponent.getGenericComponent();
                     ReadActionData readActionData = new ReadActionData(readActionJson);
 
-                    SketchFunction rfunction = new SketchFunction("action_" + readActionJson.getLabel(), readActionJson.getLabel().equals("leer_teclado") || readActionJson.getLabel().equals("leer_tecla") ? SketchFunctionType.STRING : SketchFunctionType.FLOAT, false);
+                    //SketchFunction rfunction = new SketchFunction("action_" + readActionJson.getLabel(), readActionJson.getLabel().equals("leer_teclado") || readActionJson.getLabel().equals("leer_tecla") ? SketchFunctionType.STRING : SketchFunctionType.FLOAT, false);
+                    SketchFunction rfunction = new SketchFunction("action_" + readActionJson.getLabel(),  SketchFunctionType.VOID, false);
 
                     board.getSketch().addFunction(rfunction);
                     readActionData.setFunction(rfunction);
@@ -235,26 +248,6 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     }
                     break;
 
-                case DEVICE_ACTION: //coco
-
-                    int i=0;
-
-                    /*ActivityWriteJson activityWriteJson = bindingComponent.getGenericComponent();
-                    ActivityJson activity = getActivity(activityWriteJson.getActivity());
-
-                    SketchFunction function = getStructure().getFunction(activity.getId());
-
-                    for (CommonWriteActionJson commonWriteActionJson : activityWriteJson.getWriteActions()) {
-
-                        WriteActionData data = getWriteAction(commonWriteActionJson.getWriteAction());
-                        SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
-
-                        function.addInstruction(functionCall);
-                        continue;
-
-                    }*/
-
-                    break;
 
                 /*case DEVICE_PORT:
 
@@ -310,6 +303,11 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
                     ReadPortJson readPortJson = bindingComponent.getGenericComponent();
                     readPortJsons.add(readPortJson);
+                    break;
+
+                case DEVICE_ACTION:
+                    DeviceActionJson deviceActionJson = bindingComponent.getGenericComponent();
+                    deviceActionJsons.add(deviceActionJson);
                     break;
 
                 case WRITE_PORT:
@@ -561,6 +559,21 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
             transitionData.getSketchFunction().setResultOperation(sketchBooleanCondition);/**/
 
+        }
+
+        for (ActionResultJson actionResultJson:actionResultJsons){
+            String deviceId=null;
+            for (DeviceActionJson deviceActionJson: deviceActionJsons ) {
+                if (deviceActionJson.getAction().equals(actionResultJson.getAction()) ){
+                    deviceId=deviceActionJson.getDevice();
+                    break;
+                }
+            }
+
+             AnalogPin pin=new AnalogPin("A0");
+             SketchFunction function=getStructure().getFunction(actionResultJson.getAction());
+             SketchFloatVariable variable=getStructure().getVariable(actionResultJson.getVariable());
+             function.addInstructions(variable.redefineVariable(pin));
         }
 
     }
