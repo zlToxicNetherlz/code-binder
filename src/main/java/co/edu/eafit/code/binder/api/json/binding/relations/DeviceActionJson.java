@@ -10,7 +10,6 @@ import java.util.List;
 @ToString
 @Getter
 public class DeviceActionJson extends RelationshipJson {
-
     private String device;
     private String action;
     private String actionType;

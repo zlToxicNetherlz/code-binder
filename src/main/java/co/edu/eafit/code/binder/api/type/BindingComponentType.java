@@ -5,6 +5,7 @@ import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
+import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionResultJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
 
@@ -36,6 +37,7 @@ public enum BindingComponentType {
     PREDICATE_VARIABLES("relationship_predicate_variables", PredicateVariablesJson.class),
     ACTION_VARIABLE("relationship_action_variable", ActionVariableJson.class),
     READ_PORT("relationship_readAction_port", ReadPortJson.class),
+    ACTION_RESULT("relationship_action_result", ActionResultJson.class),
 
     ;
 
