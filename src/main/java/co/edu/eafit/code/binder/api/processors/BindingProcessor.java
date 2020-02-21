@@ -5,9 +5,11 @@ import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.*;
+import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonExecutionActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPhaseJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPredicateJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonWriteActionJson;
+import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
 import co.edu.eafit.code.binder.api.structure.BindingComponent;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
@@ -48,8 +50,10 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
     private LinkedList<ReadPortJson> readPortJsons;
     private LinkedList<OperatorPredicateJson> operatorPredicateJsons;
     private LinkedList<OperatorTransitionJson> operatorTransitionJsons;
-    private LinkedList<PredicateReadJson> predicateReadJsons;
+    private LinkedList<PredicateVariablesJson> predicateVariablesJsons;
+    private LinkedList<ActionVariableJson> actionVariableJsons;
     private LinkedList<ControlActionPortJson> controlActionPortJsons;
+    private LinkedList<VariableJson> variableJsons;
 
     private LinkedList<WriteActionData> writeActionDatas;
     private LinkedList<ReadActionData> readActionDatas;
@@ -69,8 +73,10 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
         this.logicalOperatorJsons = new LinkedList<>();
         this.operatorPredicateJsons = new LinkedList<>();
         this.operatorTransitionJsons = new LinkedList<>();
-        this.predicateReadJsons = new LinkedList<>();
+        this.predicateVariablesJsons = new LinkedList<>();
         this.controlActionPortJsons = new LinkedList<>();
+        this.variableJsons = new LinkedList<>();
+        this.actionVariableJsons=new LinkedList<>();
 
         this.timerDatas = new LinkedList<>();
         this.writeActionDatas = new LinkedList<>();
@@ -92,6 +98,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                 case VARIABLE:
 
                     VariableJson variableJson = bindingComponent.getGenericComponent();
+                    variableJsons.add(variableJson);
 
                     if (variableJson.getType() == VariableComponentType.ANALOG_VARIABLE) {
 
@@ -208,7 +215,50 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     activityJsons.add(activityJson);
                     break;
 
-                case ACTIVITY_WRITE:
+                case ACTIVITY_ACTION: //coco
+                    ActivityActionJson activityActionJson=bindingComponent.getGenericComponent();
+                    ActivityJson activity = getActivity(activityActionJson.getActivity());
+                    SketchFunction function = getStructure().getFunction(activity.getId());
+                    for (CommonExecutionActionJson commonExecutionActionJson : activityActionJson.getActions()) {
+                        if (commonExecutionActionJson.getActionType().equals("writeAction")){
+                            WriteActionData data = getWriteAction(commonExecutionActionJson.getAction());
+                            SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
+                            function.addInstruction(functionCall);
+                        } else if (commonExecutionActionJson.getActionType().equals("readAction")){
+                            ReadActionData data=getReadAction(commonExecutionActionJson.getAction());
+                            SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
+                            function.addInstruction(functionCall);
+                        } else if (commonExecutionActionJson.getActionType().equals("controlAction")){
+                            //todo: y si es una controlAction que?
+                            int j=0;
+                        }
+                    }
+                    break;
+
+                case DEVICE_ACTION: //coco
+
+                    int i=0;
+
+                    /*ActivityWriteJson activityWriteJson = bindingComponent.getGenericComponent();
+                    ActivityJson activity = getActivity(activityWriteJson.getActivity());
+
+                    SketchFunction function = getStructure().getFunction(activity.getId());
+
+                    for (CommonWriteActionJson commonWriteActionJson : activityWriteJson.getWriteActions()) {
+
+                        WriteActionData data = getWriteAction(commonWriteActionJson.getWriteAction());
+                        SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
+
+                        function.addInstruction(functionCall);
+                        continue;
+
+                    }*/
+
+                    break;
+
+                /*case DEVICE_PORT:
+
+                    int i=0;
 
                     ActivityWriteJson activityWriteJson = bindingComponent.getGenericComponent();
                     ActivityJson activity = getActivity(activityWriteJson.getActivity());
@@ -225,7 +275,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
                     }
 
-                    break;
+                    break;*/
 
                 case CONTROL_ACTION_PORT:
 
@@ -233,10 +283,9 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     controlActionPortJsons.add(controlActionPortJson);
                     break;
 
-                case PREDICATE_READ:
-
-                    PredicateReadJson predicateReadJson = bindingComponent.getGenericComponent();
-                    predicateReadJsons.add(predicateReadJson);
+                case PREDICATE_VARIABLES:
+                    PredicateVariablesJson predicateVariablesJson = bindingComponent.getGenericComponent();
+                    predicateVariablesJsons.add(predicateVariablesJson);
                     break;
 
                 case LOGICAL_OPERATOR:
@@ -350,13 +399,14 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                         for (CommonPhaseJson beginPhase : stateActivityJson.getBeginPhase())
                             sketchIfOperation.addInstruction(new SketchFunctionCall(getStructure().getFunction(beginPhase.getActivity())));
 
-                    if (stateActivityJson.getWhilePhase().size() > 0)
+                    if (stateActivityJson.getWhilePhase().size() > 0) {
+                        SketchElseOperation sketchElseOperation = new SketchElseOperation(sketchIfOperation);
                         for (CommonPhaseJson whilePhase : stateActivityJson.getWhilePhase()) {
 
-                            SketchElseOperation sketchElseOperation = new SketchElseOperation(sketchIfOperation);
                             sketchElseOperation.addInstruction(new SketchFunctionCall(getStructure().getFunction(whilePhase.getActivity())));
 
                         }
+                    }
 
                     sketchIfOperation.addInstruction(lastState.redefineVariable(currentState));
                     basicStateData.getSketchFunction().addInstruction(sketchIfOperation);
@@ -410,7 +460,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
         for (ReadPortJson readPortJson : readPortJsons) {
 
-            ReadActionData readActionData = getReadAction(readPortJson.getReadAction());
+            /*ReadActionData readActionData = getReadAction(readPortJson.getReadAction());
             TimerData timerData = getTimer(readPortJson.getReadPort());
 
             if (timerData != null) {
@@ -447,11 +497,34 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                 readActionData.getSketchFunction().setResultLibraryVariable(sketchLibraryVariable);
                 continue;
 
-            }
+            }*/
 
         }
 
-        for (PredicateReadJson predicateReadJson : predicateReadJsons) {
+        for (PredicateVariablesJson predicateReadJson : predicateVariablesJsons) {
+
+            PredicateJson predicateJson = getPredicate(predicateReadJson.getPredicate());
+
+            PredicateComponentType operatorType = predicateJson.getOperator();
+
+            SketchFunction predicateFunction = new SketchFunction("predicate_" + predicateJson.getLabel(), SketchFunctionType.BOOLEAN, false);
+
+            SketchVariable v1 = getStructure().getVariable(predicateReadJson.getPrimaryVariable());
+            SketchVariable v2 = getStructure().getVariable(predicateReadJson.getSecondaryVariable());
+
+            //todo: se necesita SketchFloatCondition por que los valores son decimales ¿y si son string variables que?
+            SketchIntegerVariable primaryVar=new  SketchIntegerVariable(v1.getLabel(),Math.round((float)v1.getValue()));
+            SketchIntegerVariable secondaryVar=new  SketchIntegerVariable(v2.getLabel(),Math.round((float)v2.getValue()));
+
+            SketchIntegerCondition condition = new SketchIntegerCondition(primaryVar, secondaryVar, operatorType.getComparatorType());
+            predicateFunction.setResultOperation(condition);
+
+            board.getSketch().addFunction(predicateFunction);
+            getStructure().getOrPut(predicateJson.getId(), predicateFunction);
+
+        }
+
+        /*for (PredicateReadJson predicateReadJson : predicateReadJsons) {
 
             PredicateJson predicateJson = getPredicate(predicateReadJson.getPredicate());
             ReadActionData primaryAction = getReadAction(predicateReadJson.getReadActionPrimary());
@@ -470,7 +543,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
             board.getSketch().addFunction(predicateFunction);
             getStructure().getOrPut(predicateJson.getId(), predicateFunction);
 
-        }
+        }*/
 
         for (OperatorTransitionJson operatorTransitionJson : operatorTransitionJsons) {
 
@@ -486,7 +559,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
             SketchFunctionCall sketchFunctionCall = new SketchFunctionCall(getStructure().getFunction(getPredicate(transitionPredicates.get(0).getPredicate()).getId()));
             SketchBooleanCondition sketchBooleanCondition = new SketchBooleanCondition(sketchFunctionCall);
 
-            transitionData.getSketchFunction().setResultOperation(sketchBooleanCondition);
+            transitionData.getSketchFunction().setResultOperation(sketchBooleanCondition);/**/
 
         }
 
@@ -544,6 +617,16 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
     }
 
     public ReadActionData getReadAction(String id) {
+
+        for (ReadActionData data : readActionDatas)
+            if (data.getReadActionJson().getId().equals(id))
+                return data;
+
+        return null;
+
+    }
+
+    public ReadActionData getVariable(String id) {
 
         for (ReadActionData data : readActionDatas)
             if (data.getReadActionJson().getId().equals(id))

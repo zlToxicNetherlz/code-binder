@@ -6,11 +6,10 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class PredicateReadJson extends RelationshipJson {
+public class PredicateVariablesJson extends RelationshipJson {
 
     private String predicate;
-
-    private String readActionPrimary;
-    private String readActionSecondary;
+    private String primaryVariable;
+    private String secondaryVariable;
 
 }

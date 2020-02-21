@@ -24,6 +24,13 @@ public class HardwareComponentJson extends ComponentJson {
         return board != null;
     }
 
+    public boolean isDevice() {
+        return device != null;
+    }
+    public boolean isRelationshipDeviceBoard() {
+        return relationship_device_board != null;
+    }
+
     public BoardJson getBoard() {
         return board;
     }
@@ -34,6 +41,9 @@ public class HardwareComponentJson extends ComponentJson {
 
     public DeviceJson getDevice() {
         return device;
+    }
+    public DeviceBoardJson getRelationshipDeviceBoard() {
+        return relationship_device_board;
     }
 
 }

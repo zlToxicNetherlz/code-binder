@@ -8,6 +8,7 @@ import lombok.ToString;
 public class CommonExecutionActionJson {
 
     private String action;
+    private String actionType;
     private String execution;
     private int time;
 
