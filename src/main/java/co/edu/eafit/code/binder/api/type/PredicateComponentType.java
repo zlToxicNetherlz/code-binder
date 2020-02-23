@@ -10,7 +10,8 @@ public enum PredicateComponentType {
     GREATER_THAN(">", SketchIntegerComparatorType.GREATER),
     LESS_THAN("<", SketchIntegerComparatorType.LESS),
 
-    EQUALS("==", SketchIntegerComparatorType.EQUALS);
+    EQUALS("==", SketchIntegerComparatorType.EQUALS),
+    NOT_EQUALS("!=", SketchIntegerComparatorType.NOT_EQUALS);
 
     private String typeLiteral;
     private SketchIntegerComparatorType comparatorType;

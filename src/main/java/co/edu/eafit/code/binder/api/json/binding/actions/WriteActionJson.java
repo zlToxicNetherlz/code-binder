@@ -10,6 +10,7 @@ public class WriteActionJson {
     private String id;
     private String label;
     private String subType;
+
     private ActionArgumentJson[] arguments;
 
 }

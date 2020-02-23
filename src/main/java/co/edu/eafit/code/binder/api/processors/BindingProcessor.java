@@ -1,6 +1,7 @@
 package co.edu.eafit.code.binder.api.processors;
 
 import co.edu.eafit.code.binder.api.json.binding.*;
+import co.edu.eafit.code.binder.api.json.binding.actions.ActionArgumentJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ControlActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.ReadActionJson;
 import co.edu.eafit.code.binder.api.json.binding.actions.WriteActionJson;
@@ -8,17 +9,18 @@ import co.edu.eafit.code.binder.api.json.binding.relations.*;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonExecutionActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPhaseJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonPredicateJson;
-import co.edu.eafit.code.binder.api.json.binding.relations.base.CommonWriteActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionResultJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionVariableJson;
 import co.edu.eafit.code.binder.api.json.component.BindingComponentJson;
+import co.edu.eafit.code.binder.api.json.hardware.DeviceJson;
 import co.edu.eafit.code.binder.api.structure.BindingComponent;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
 import co.edu.eafit.code.binder.api.structure.dynamic.*;
 import co.edu.eafit.code.binder.api.type.PredicateComponentType;
 import co.edu.eafit.code.binder.api.type.VariableComponentType;
-import co.edu.eafit.code.binder.model.variables.SketchKeypadVariable;
 import co.edu.eafit.code.binder.model.variables.SketchLiquidCrystalVariable;
+import co.edu.eafit.code.binder.resolver.processors.DeviceProcessor;
+import co.edu.eafit.code.binder.resolver.processors.data.DeviceWriter;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.pins.AnalogPin;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.pins.DigitalPin;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.uno.ArduinoUnoBoard;
@@ -34,18 +36,17 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.operations.S
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preloads.SketchNativeFunctionType;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preprocessor.SketchDefineDirective;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.*;
-import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.operator.SketchNumberOperator;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import lombok.Getter;
 
-import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
 @Getter
 public class BindingProcessor extends Processor<BindingComponentJson> {
 
+    private DeviceProcessor deviceProcessor;
     private MachineProcessor machineProcessor;
+    private HardwareProcessor hardwareProcessor;
 
     private LinkedList<ActivityJson> activityJsons;
     private LinkedList<LogicalOperatorJson> logicalOperatorJsons;
@@ -60,6 +61,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
     private LinkedList<ActionResultJson> actionResultJsons;
     private LinkedList<DeviceActionJson> deviceActionJsons;
 
+    private LinkedList<DeviceWriteActionData> deviceWriteActionDatas;
     private LinkedList<WriteActionData> writeActionDatas;
     private LinkedList<ReadActionData> readActionDatas;
     private LinkedList<ControlActionData> controlActionDatas;
@@ -67,10 +69,12 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
     private SketchFunction resetTimer;
 
-    public BindingProcessor(StructureModifier structureModifier, MachineProcessor machineProcessor) {
+    public BindingProcessor(StructureModifier structureModifier, DeviceProcessor deviceProcessor, HardwareProcessor hardwareProcessor, MachineProcessor machineProcessor) {
         super(structureModifier);
 
         this.machineProcessor = machineProcessor;
+        this.hardwareProcessor = hardwareProcessor;
+        this.deviceProcessor = deviceProcessor;
 
         this.activityJsons = new LinkedList<>();
         this.predicateJsons = new LinkedList<>();
@@ -81,14 +85,15 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
         this.predicateVariablesJsons = new LinkedList<>();
         this.controlActionPortJsons = new LinkedList<>();
         this.variableJsons = new LinkedList<>();
-        this.actionVariableJsons=new LinkedList<>();
-        this.actionResultJsons=new LinkedList<>();
-        this.deviceActionJsons=new LinkedList<>();
+        this.actionVariableJsons = new LinkedList<>();
+        this.actionResultJsons = new LinkedList<>();
+        this.deviceActionJsons = new LinkedList<>();
 
         this.timerDatas = new LinkedList<>();
         this.writeActionDatas = new LinkedList<>();
         this.readActionDatas = new LinkedList<>();
         this.controlActionDatas = new LinkedList<>();
+        this.deviceWriteActionDatas = new LinkedList<>();
 
     }
 
@@ -188,21 +193,17 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     readActionDatas.add(readActionData);
                     break;
 
-                case WRITE_ACTION:
+                case ACTION_VARIABLE:
+                    ActionVariableJson actionVariableJson = bindingComponent.getGenericComponent();
+                    actionVariableJsons.add(actionVariableJson);
+                    break;
+
+                case WRITE_ACTION: // todo
 
                     WriteActionJson writeActionJson = bindingComponent.getGenericComponent();
                     WriteActionData writeActionData = new WriteActionData(writeActionJson);
 
                     SketchFunction wfunction = new SketchFunction("action_" + writeActionJson.getLabel(), SketchFunctionType.VOID, false);
-
-                    if (wfunction.getLabel().equals("action_resetear_timer")) {
-
-                        resetTimer = wfunction;
-
-                        for (TimerData basicTimer : timerDatas)
-                            wfunction.addInstruction(basicTimer.getSketchLongVariable().redefineVariablesAsMillis());
-
-                    }
 
                     writeActionData.setFunction(wfunction);
                     board.getSketch().addFunction(wfunction);
@@ -561,19 +562,65 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
         }
 
-        for (ActionResultJson actionResultJson:actionResultJsons){
-            String deviceId=null;
-            for (DeviceActionJson deviceActionJson: deviceActionJsons ) {
-                if (deviceActionJson.getAction().equals(actionResultJson.getAction()) ){
-                    deviceId=deviceActionJson.getDevice();
+        for (WriteActionData writeActionData : writeActionDatas)
+            for (ActionArgumentJson actionArgumentJson : writeActionData.getWriteActionJson().getArguments())
+                for (ActionVariableJson actionVariables : actionVariableJsons)
+                    if (actionArgumentJson.getId().equals(actionVariables.getActionArgument()))
+                        actionArgumentJson.setVariableId(actionVariables.getVariable());
+
+        for (ReadActionData writeActionData : readActionDatas)
+            for (ActionArgumentJson actionArgumentJson : writeActionData.getReadActionJson().getArguments())
+                for (ActionVariableJson actionVariables : actionVariableJsons)
+                    if (actionArgumentJson.getId().equals(actionVariables.getActionArgument()))
+                        actionArgumentJson.setVariableId(actionVariables.getVariable());
+
+        for (DeviceActionJson deviceActionJson : deviceActionJsons) { // Write and Read
+
+            DeviceData deviceData = null;
+
+            WriteActionData writeActionData = null;
+            ReadActionData readActionData = null;
+
+            boolean isWriteAction = false;
+
+            for (DeviceJson deviceJson : hardwareProcessor.getDeviceJsons())
+                if (deviceActionJson.getDevice().equals(deviceJson.getId())) {
+                    deviceData = new DeviceData(deviceProcessor, deviceJson);
                     break;
                 }
+
+            for (WriteActionData writeData : writeActionDatas)
+                if (deviceActionJson.getAction().equals(writeData.getWriteActionJson().getId())) {
+                    writeActionData = writeData;
+                    isWriteAction = true;
+                    break;
+                }
+
+            for (ReadActionData readData : readActionDatas)
+                if (deviceActionJson.getAction().equals(readData.getReadActionJson().getId())) {
+                    readActionData = readData;
+                    isWriteAction = false;
+                    break;
+                }
+
+            if (deviceData == null)
+                continue;
+
+            if ((isWriteAction && writeActionData == null) || (!isWriteAction && readActionData == null))
+                continue;
+
+            if (isWriteAction) {
+
+                DeviceWriter writer = new DeviceWriter(this, hardwareProcessor);
+                deviceProcessor.processDeviceWrite(deviceData, writer, writeActionData);
+                continue;
+
             }
 
-             AnalogPin pin=new AnalogPin("A0");
-             SketchFunction function=getStructure().getFunction(actionResultJson.getAction());
-             SketchFloatVariable variable=getStructure().getVariable(actionResultJson.getVariable());
-             function.addInstructions(variable.redefineVariable(pin));
+            DeviceWriter writer = new DeviceWriter(this, hardwareProcessor);
+            deviceProcessor.processDeviceRead(deviceData, writer, readActionData);
+            continue;
+
         }
 
     }

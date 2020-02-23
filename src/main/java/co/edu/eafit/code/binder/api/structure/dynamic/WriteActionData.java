@@ -5,12 +5,17 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchFuncti
 import lombok.Getter;
 import lombok.ToString;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @ToString
 @Getter
 public class WriteActionData {
 
     private WriteActionJson writeActionJson;
     private SketchFunction sketchFunction;
+
+    private Map<String, String> argumentVariables = new HashMap<String, String>();
 
     public WriteActionData(WriteActionJson writeActionJson) {
         this.writeActionJson = writeActionJson;
