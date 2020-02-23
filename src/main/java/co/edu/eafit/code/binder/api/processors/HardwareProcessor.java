@@ -2,10 +2,12 @@ package co.edu.eafit.code.binder.api.processors;
 
 import co.edu.eafit.code.binder.api.json.binding.relations.hardware.DeviceBoardJson;
 import co.edu.eafit.code.binder.api.json.component.HardwareComponentJson;
+import co.edu.eafit.code.binder.api.json.hardware.BoardJson;
 import co.edu.eafit.code.binder.api.json.hardware.DeviceJson;
 import co.edu.eafit.code.binder.api.json.hardware.PinJson;
 import co.edu.eafit.code.binder.api.json.hardware.PortJson;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
+import co.edu.eafit.code.binder.api.structure.dynamic.DeviceBoardPinData;
 import co.edu.eafit.code.binder.api.type.PortComponentType;
 import co.edu.eafit.code.binder.model.library.SketchHeaderKeypadLibrary;
 import co.edu.eafit.code.binder.model.library.SketchHeaderLiquidCrystalLibrary;
@@ -16,69 +18,63 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preprocessor
 import co.edu.eafit.code.generator.metamodel.arduino.classes.type.PinMode;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
 public class HardwareProcessor extends Processor<HardwareComponentJson> {
 
-    @Getter
-    private LinkedList<PortJson> portJsons;
+    private LinkedList<BoardJson> boardJsons;
+    private LinkedList<DeviceJson> deviceJsons;
+
+    private LinkedList<DeviceBoardPinData> deviceBoardConnections;
 
     public HardwareProcessor(StructureModifier structureModifier) {
         super(structureModifier);
 
-        this.portJsons = new LinkedList<>();
+        this.boardJsons = new LinkedList<>();
+        this.deviceJsons = new LinkedList<>();
+        this.deviceBoardConnections = new LinkedList<>();
 
     }
 
     @Override
     public void compose(List<HardwareComponentJson> componentJson, ArduinoUnoBoard board) {
-        ArrayList<PinJson> boardPins=new ArrayList<PinJson>();
-        ArrayList<PinJson> devicePins=new ArrayList<PinJson>();
 
         for (HardwareComponentJson hardwareComponentJson : componentJson) {
-            if (hardwareComponentJson.isBoard()){
-                for (PinJson pin: hardwareComponentJson.getBoard().getPins()) {
-                    boardPins.add(pin);
-                }
-            }
-            if (hardwareComponentJson.isDevice()){
-                for (PinJson pin: hardwareComponentJson.getDevice().getPins()) {
-                    devicePins.add(pin);
-                }
-            }
+            if (hardwareComponentJson.isBoard())
+                boardJsons.add(hardwareComponentJson.getBoard());
+            if (hardwareComponentJson.isDevice())
+                deviceJsons.add(hardwareComponentJson.getDevice());
         }
 
         for (HardwareComponentJson hardwareComponentJson : componentJson) {
-            if (hardwareComponentJson.isRelationshipDeviceBoard()){
+            if (hardwareComponentJson.isRelationshipDeviceBoard()) {
+
                 DeviceBoardJson relation = hardwareComponentJson.getRelationshipDeviceBoard();
-                PinJson pinDevice=null;
-                for (PinJson pin: devicePins) {
-                    if (pin.getId().equals(relation.getPinDevice())){
-                        pinDevice=pin;
-                        break;
-                    }
-                }
-                PinJson pinBoard=null;
-                for (PinJson pin: boardPins) {
-                    if (pin.getId().equals(relation.getPinBoard())){
-                        pinBoard=pin;
-                        break;
-                    }
-                }
 
-               // PinMode mode = pinDevice.getMode().equals("input") ? PinMode.INPUT : PinMode.OUTPUT;
-                PinMode mode = PinMode.OUTPUT; //esto lo debe cargar de la librería del dispositivo
-                String p=pinBoard.getLabel();
-                String l=relation.getId() + "_" + p;
-                if (pinBoard.getType().equals("digital")){
-                    getStructure().put(pinBoard.getId(), board.useDigitalPin(p, l, mode));
-                }else if (pinBoard.getType().equals("analog")){
-                    getStructure().put(pinBoard.getId(), board.useAnalogPin(p, l, mode));
-                }else if (pinBoard.getType().equals("pmw")){
+                DeviceJson relationDevice = null;
+                PinJson pinDevice = null;
 
-                }
+                for (DeviceJson deviceJson : deviceJsons)
+                    for (PinJson pinJson : deviceJson.getPins())
+                        if (pinJson.getId().equals(relation.getPinDevice())) {
+                            pinDevice = pinJson;
+                            relationDevice = deviceJson;
+                            break;
+                        }
+
+                PinJson pinBoard = null;
+                for (BoardJson boardJson : boardJsons)
+                    for (PinJson pinJson : boardJson.getPins())
+                        if (pinJson.getId().equals(relation.getPinBoard())) {
+                            pinBoard = pinJson;
+                            break;
+                        }
+
+                DeviceBoardPinData deviceBoardPinData = new DeviceBoardPinData(board, relationDevice, pinDevice, pinBoard);
+                deviceBoardConnections.add(deviceBoardPinData);
+
             }
         }
     }

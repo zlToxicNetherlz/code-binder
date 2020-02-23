@@ -12,4 +12,10 @@ public class ActionArgumentJson {
     private String type;
     private String subType;
 
+    private String variableId;
+
+    public void setVariableId(String id) {
+        this.variableId = id;
+    }
+
 }

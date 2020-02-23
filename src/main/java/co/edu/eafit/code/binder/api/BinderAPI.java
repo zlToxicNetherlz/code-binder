@@ -7,6 +7,7 @@ import co.edu.eafit.code.binder.api.processors.HardwareProcessor;
 import co.edu.eafit.code.binder.api.processors.MachineProcessor;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
 import co.edu.eafit.code.binder.api.structure.dynamic.BasicStateData;
+import co.edu.eafit.code.binder.resolver.processors.DeviceProcessor;
 import co.edu.eafit.code.generator.generator.buffer.CodeBuffer;
 import co.edu.eafit.code.generator.metamodel.arduino.ArduinoMetamodel;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.Project;
@@ -41,7 +42,7 @@ public class BinderAPI {
     public static Project getLocalProject(String projectName) throws FileNotFoundException {
 
         Gson gson = new Gson();
-        RemoteJson json = gson.fromJson(new FileReader("C:/Temp/" + projectName + ".json"), RemoteJson.class);
+        RemoteJson json = gson.fromJson(new FileReader("C:/Users/abrah/Desktop/Integrador/" + projectName + ".json"), RemoteJson.class);
 
         return getProject(json);
 
@@ -72,9 +73,10 @@ public class BinderAPI {
         ArduinoUnoBoard board = new ArduinoUnoBoard();
         StructureModifier structureModifier = new StructureModifier();
 
+        DeviceProcessor deviceProcessor = new DeviceProcessor();
         HardwareProcessor hardwareProcessor = new HardwareProcessor(structureModifier);
         MachineProcessor machineProcessor = new MachineProcessor(structureModifier);
-        BindingProcessor bindingProcessor = new BindingProcessor(structureModifier, machineProcessor);
+        BindingProcessor bindingProcessor = new BindingProcessor(structureModifier, deviceProcessor, hardwareProcessor, machineProcessor);
         ControlProcessor controlProcessor = new ControlProcessor(structureModifier, machineProcessor, bindingProcessor);
 
         hardwareProcessor.compose(remoteJson.getHardwareComponents(), board);

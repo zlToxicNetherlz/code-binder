@@ -1,16 +1,11 @@
 package co.edu.eafit.code.binder.api.json.component;
 
 import co.edu.eafit.code.binder.api.json.ComponentJson;
-import co.edu.eafit.code.binder.api.json.binding.relations.StateActivityJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardware.DeviceBoardJson;
 import co.edu.eafit.code.binder.api.json.hardware.BoardJson;
 import co.edu.eafit.code.binder.api.json.hardware.DeviceJson;
 import co.edu.eafit.code.binder.api.json.hardware.PortJson;
-import co.edu.eafit.code.binder.api.structure.BindingComponent;
-import co.edu.eafit.code.binder.api.type.BindingComponentType;
 import lombok.ToString;
-
-import java.util.Map;
 
 @ToString
 public class HardwareComponentJson extends ComponentJson {
