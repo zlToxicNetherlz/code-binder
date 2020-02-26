@@ -65,7 +65,7 @@ public class DeviceProcessor {
         for (DeviceBoardPinData pinData : hardwareProcessor.getDeviceBoardConnections())
             if (pinData.getDeviceJson().getId().equals(device.getDeviceJson().getId())) {
                 deviceBoardPinDatas.add(pinData);
-                break;
+                continue;
             }
 
         for (MacroJson macro : device.getResolverJson().getMacros()) {
@@ -118,7 +118,7 @@ public class DeviceProcessor {
         for (DeviceBoardPinData pinData : writer.getHardwareProcessor().getDeviceBoardConnections())
             if (pinData.getDeviceJson().getId().equals(device.getDeviceJson().getId())) {
                 deviceBoardPinDatas.add(pinData);
-                break;
+                continue;
             }
 
         for (DeviceReadActionJson actionJson : device.getResolverJson().getReadActions()) {
@@ -143,7 +143,7 @@ public class DeviceProcessor {
         for (DeviceBoardPinData pinData : writer.getHardwareProcessor().getDeviceBoardConnections())
             if (pinData.getDeviceJson().getId().equals(device.getDeviceJson().getId())) {
                 deviceBoardPinDatas.add(pinData);
-                break;
+                continue;
             }
 
         for (DeviceWriteActionJson actionJson : device.getResolverJson().getWriteActions()) {
@@ -427,7 +427,7 @@ public class DeviceProcessor {
             if (deviceBoardPinData.getDevicePin().getLabel().equals(pinJson.getLabel()))
                 return deviceBoardPinData;
 
-        return null;
+        throw new RuntimeException("No se encontró un Pin Especifico para '" + pinJson + "'.");
 
     }
 
