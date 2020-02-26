@@ -612,12 +612,14 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
             if (isWriteAction) {
 
                 DeviceWriter writer = new DeviceWriter(this, hardwareProcessor);
+                deviceProcessor.processDeviceMacro(deviceData, hardwareProcessor);
                 deviceProcessor.processDeviceWrite(deviceData, writer, writeActionData);
                 continue;
 
             }
 
             DeviceWriter writer = new DeviceWriter(this, hardwareProcessor);
+            deviceProcessor.processDeviceMacro(deviceData, hardwareProcessor);
             deviceProcessor.processDeviceRead(deviceData, writer, readActionData);
             continue;
 

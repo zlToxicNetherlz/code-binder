@@ -2,6 +2,7 @@ package co.edu.eafit.code.binder.resolver.json;
 
 import co.edu.eafit.code.binder.resolver.json.actions.DeviceReadActionJson;
 import co.edu.eafit.code.binder.resolver.json.actions.DeviceWriteActionJson;
+import co.edu.eafit.code.binder.resolver.json.macros.MacroJson;
 import co.edu.eafit.code.binder.resolver.json.variables.DeviceVariable;
 import lombok.Getter;
 import lombok.ToString;
@@ -13,6 +14,8 @@ public class DeviceJson {
     private String name;
 
     private String[] digitalPins, analogPins, pwmPins;
+
+    private MacroJson[] macros;
     private DeviceVariable[] variables;
 
     private DeviceWriteActionJson[] writeActions;

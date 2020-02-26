@@ -13,6 +13,7 @@ import co.edu.eafit.code.binder.model.library.SketchHeaderKeypadLibrary;
 import co.edu.eafit.code.binder.model.library.SketchHeaderLiquidCrystalLibrary;
 import co.edu.eafit.code.binder.model.variables.SketchKeypadVariable;
 import co.edu.eafit.code.binder.model.variables.SketchLiquidCrystalVariable;
+import co.edu.eafit.code.generator.metamodel.arduino.classes.Board;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.uno.ArduinoUnoBoard;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.preprocessor.SketchDefineDirective;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.type.PinMode;
@@ -23,6 +24,8 @@ import java.util.List;
 
 @Getter
 public class HardwareProcessor extends Processor<HardwareComponentJson> {
+
+    private Board board;
 
     private LinkedList<BoardJson> boardJsons;
     private LinkedList<DeviceJson> deviceJsons;
@@ -40,6 +43,8 @@ public class HardwareProcessor extends Processor<HardwareComponentJson> {
 
     @Override
     public void compose(List<HardwareComponentJson> componentJson, ArduinoUnoBoard board) {
+
+        this.board = board;
 
         for (HardwareComponentJson hardwareComponentJson : componentJson) {
             if (hardwareComponentJson.isBoard())

@@ -12,6 +12,12 @@ public class PinJson {
     private String label;
     private String type;
 
+    private String link;
+
+    public void linkVariable(String variableName) {
+        this.link = variableName;
+    }
+
     public PinType getType() {
 
         for (PinType type : PinType.values())

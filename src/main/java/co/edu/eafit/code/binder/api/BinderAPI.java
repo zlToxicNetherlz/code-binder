@@ -8,6 +8,7 @@ import co.edu.eafit.code.binder.api.processors.MachineProcessor;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
 import co.edu.eafit.code.binder.api.structure.dynamic.BasicStateData;
 import co.edu.eafit.code.binder.resolver.processors.DeviceProcessor;
+import co.edu.eafit.code.binder.resolver.processors.macros.IncludeMacro;
 import co.edu.eafit.code.generator.generator.buffer.CodeBuffer;
 import co.edu.eafit.code.generator.metamodel.arduino.ArduinoMetamodel;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.Project;
@@ -85,9 +86,14 @@ public class BinderAPI {
         controlProcessor.compose(remoteJson.getControlComponents(), board);
 
         composeLoopFunction(machineProcessor, board);
+        clearCache();
 
         project.addBoard(board);
 
+    }
+
+    private static void clearCache() {
+        IncludeMacro.clearIncluded();
     }
 
     private static void composeLoopFunction(MachineProcessor machineProcessor, ArduinoUnoBoard board) {

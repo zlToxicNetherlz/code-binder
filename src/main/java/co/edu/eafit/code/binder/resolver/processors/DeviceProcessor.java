@@ -4,19 +4,20 @@ import co.edu.eafit.code.binder.api.json.binding.actions.ActionArgumentJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.DeviceActionJson;
 import co.edu.eafit.code.binder.api.json.binding.relations.hardwareBehavior.ActionResultJson;
 import co.edu.eafit.code.binder.api.json.hardware.PinJson;
+import co.edu.eafit.code.binder.api.processors.HardwareProcessor;
 import co.edu.eafit.code.binder.api.structure.StructureModifier;
-import co.edu.eafit.code.binder.api.structure.dynamic.DeviceBoardPinData;
-import co.edu.eafit.code.binder.api.structure.dynamic.DeviceData;
-import co.edu.eafit.code.binder.api.structure.dynamic.ReadActionData;
-import co.edu.eafit.code.binder.api.structure.dynamic.WriteActionData;
+import co.edu.eafit.code.binder.api.structure.dynamic.*;
 import co.edu.eafit.code.binder.resolver.VariamosResolver;
 import co.edu.eafit.code.binder.resolver.json.DeviceJson;
 import co.edu.eafit.code.binder.resolver.json.actions.DeviceReadActionJson;
 import co.edu.eafit.code.binder.resolver.json.actions.DeviceWriteActionJson;
 import co.edu.eafit.code.binder.resolver.json.actions.instructions.DeviceInstructionJson;
+import co.edu.eafit.code.binder.resolver.json.macros.MacroJson;
+import co.edu.eafit.code.binder.resolver.json.macros.MacroType;
 import co.edu.eafit.code.binder.resolver.json.variables.DeviceVariable;
 import co.edu.eafit.code.binder.resolver.json.variables.DeviceVariableType;
 import co.edu.eafit.code.binder.resolver.processors.data.DeviceWriter;
+import co.edu.eafit.code.binder.resolver.processors.data.Macro;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.Board;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.model.Pin;
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.SketchVariable;
@@ -27,6 +28,8 @@ import lombok.Getter;
 
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 public class DeviceProcessor {
@@ -50,6 +53,64 @@ public class DeviceProcessor {
 
     }
 
+    public void processDeviceMacro(DeviceData device, HardwareProcessor hardwareProcessor) {
+
+        if (device.getResolverJson().getMacros() == null || device.getResolverJson().getMacros().length == 0)
+            return;
+
+        co.edu.eafit.code.binder.api.json.hardware.DeviceJson remote = device.getDeviceJson();
+
+        LinkedList<DeviceBoardPinData> deviceBoardPinDatas = new LinkedList<>();
+
+        for (DeviceBoardPinData pinData : hardwareProcessor.getDeviceBoardConnections())
+            if (pinData.getDeviceJson().getId().equals(device.getDeviceJson().getId())) {
+                deviceBoardPinDatas.add(pinData);
+                break;
+            }
+
+        for (MacroJson macro : device.getResolverJson().getMacros()) {
+
+            int i = 0;
+            String[] processed = new String[macro.getParameters().length];
+
+            for (String parameter : macro.getParameters()) {
+
+                parameter = parameter.replaceAll("\\%remote_id\\%", remote.getId().toUpperCase());
+                parameter = parameter.replaceAll("\\%remote_label\\%", remote.getLabel());
+
+                String pattern1 = "%var_";
+                String pattern2 = "%";
+
+                Pattern p = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
+                Matcher m = p.matcher(parameter);
+
+                while (m.find()) {
+
+                    String variable = m.group(1);
+
+                    DeviceVariable deviceVariable = getVariable(device.getResolverJson(), variable);
+                    DeviceBoardPinData pinData = getSpecificPin(device.getDeviceJson().getPins(), deviceVariable.getTruePin(), deviceBoardPinDatas);
+
+                    parameter = parameter.replaceAll("%var_" + variable + "%", pinData.getBoardPin().getLabel());
+
+                }
+
+                processed[i] = parameter;
+                i++;
+
+            }
+
+            macro.setParameters(processed);
+
+            MacroType type = macro.getMacroType();
+            Macro omacro = type.process();
+
+            omacro.process(macro, hardwareProcessor.getBoard().getSketch());
+
+        }
+
+    }
+
     public void processDeviceRead(DeviceData device, DeviceWriter writer, ReadActionData readActionData) {
 
         LinkedList<DeviceBoardPinData> deviceBoardPinDatas = new LinkedList<>();
@@ -66,105 +127,9 @@ public class DeviceProcessor {
 
                 System.out.println("[Generating](READ) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
-                for (DeviceInstructionJson instructionJson : actionJson.getInstructions()) {
-                    if (instructionJson.isSdk()) {
-
-                        String resultLabel = "";
-
-                        SketchNativeFunctionType sdkFunction = getNativeFunction(instructionJson.getFname());
-                        LinkedList<Object> parametersObjects = new LinkedList<>();
-
-                        if (sdkFunction.getResult() != null) {
-
-                            z:
-                            for (DeviceActionJson deviceActionJson : writer.getBindingProcessor().getDeviceActionJsons())
-                                if (deviceActionJson.getAction().equals(readActionData.getReadActionJson().getId()))
-                                    for (ActionResultJson actionResultJson : writer.getBindingProcessor().getActionResultJsons())
-                                        if (actionResultJson.getAction().equals(deviceActionJson.getAction())) {
-                                            StructureModifier structure = writer.getBindingProcessor().getStructure();
-                                            resultLabel = structure.getVariable(actionResultJson.getVariable()).getLabel();
-                                            break z;
-                                        }
-
-                        }
-
-                        // Parametros
-                        for (String parameter : instructionJson.getParameters()) {
-
-                            DeviceVariable deviceVariable = getVariable(device.getResolverJson(), parameter);
-
-                            switch (deviceVariable.getScope()) {
-
-                                case PWMPIN:
-                                case ANALOGPIN:
-                                case DIGITALPIN:
-
-                                    DeviceVariableType scope = deviceVariable.getScope();
-                                    DeviceBoardPinData deviceBoardPinData = getSpecificPin(device.getDeviceJson().getPins(), deviceVariable.getTruePin(), deviceBoardPinDatas);
-
-                                    String boardPinLabel = deviceBoardPinData.getBoardPin().getLabel();
-                                    String directiveId = device.getDeviceJson().getId().toUpperCase() + "_" + boardPinLabel;
-                                    Board board = deviceBoardPinData.getBoard();
-
-                                    if (!deviceBoardPinData.isUsed()) {
-
-                                        Pin abstractPin;
-
-                                        if (scope == DeviceVariableType.DIGITALPIN)
-                                            abstractPin = board.useDigitalPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-                                        else if (scope == DeviceVariableType.ANALOGPIN)
-                                            abstractPin = board.useAnalogPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-                                        else
-                                            abstractPin = board.usePWMPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-
-                                        deviceBoardPinData.setUsed(true);
-                                        deviceBoardPinData.setPin(abstractPin);
-
-                                    }
-
-                                    parametersObjects.add(directiveId);
-                                    break;
-
-                                case DYNAMIC:
-                                    for (ActionArgumentJson actionArgumentJson : readActionData.getReadActionJson().getArguments())
-                                        if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
-                                            SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
-                                            parametersObjects.add(sketchVariable);
-                                        }
-
-                                    break;
-
-                                case STATIC:
-                                    parametersObjects.add(getStaticVariable(deviceVariable.getType(), deviceVariable.getLiteral()));
-                                    break;
-
-                            }
-
-                        }
-
-                        LinkedList<String> directives = new LinkedList<>();
-                        LinkedList<SketchVariable> variables = new LinkedList<>();
-
-                        for (Object object : parametersObjects)
-                            if (object instanceof String)
-                                directives.add((String) object);
-                            else if (object instanceof SketchVariable)
-                                variables.add((SketchVariable) object);
-
-                        String finalResultLabel = resultLabel;
-                        readActionData.getSketchFunction().addInstruction(codeBuffer -> {
-
-                            if (finalResultLabel != null && !finalResultLabel.isEmpty())
-                                codeBuffer.appendLine(sdkFunction.createCallAndSave(finalResultLabel, directives, variables, true));
-                            else
-                                codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
-
-                            return true;
-
-                        });
-
-                    }
-                }
+                for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
+                    if (instructionJson.isSdk())
+                        processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
 
             }
         }
@@ -187,85 +152,251 @@ public class DeviceProcessor {
 
                 System.out.println("[Generating](WRITE) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
-                for (DeviceInstructionJson instructionJson : actionJson.getInstructions()) {
-                    if (instructionJson.isSdk()) {
-
-                        SketchNativeFunctionType sdkFunction = getNativeFunction(instructionJson.getFname());
-                        LinkedList<Object> parametersObjects = new LinkedList<>();
-
-                        // Parametros
-                        for (String parameter : instructionJson.getParameters()) {
-
-                            DeviceVariable deviceVariable = getVariable(device.getResolverJson(), parameter);
-
-                            switch (deviceVariable.getScope()) {
-
-                                case PWMPIN:
-                                case ANALOGPIN:
-                                case DIGITALPIN:
-
-                                    DeviceVariableType scope = deviceVariable.getScope();
-                                    DeviceBoardPinData deviceBoardPinData = getSpecificPin(device.getDeviceJson().getPins(), deviceVariable.getTruePin(), deviceBoardPinDatas);
-
-                                    String boardPinLabel = deviceBoardPinData.getBoardPin().getLabel();
-                                    String directiveId = device.getDeviceJson().getId().toUpperCase() + "_" + boardPinLabel;
-                                    Board board = deviceBoardPinData.getBoard();
-
-                                    if (!deviceBoardPinData.isUsed()) {
-
-                                        Pin abstractPin;
-
-                                        if (scope == DeviceVariableType.DIGITALPIN)
-                                            abstractPin = board.useDigitalPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-                                        else if (scope == DeviceVariableType.ANALOGPIN)
-                                            abstractPin = board.useAnalogPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-                                        else
-                                            abstractPin = board.usePWMPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
-
-                                        deviceBoardPinData.setUsed(true);
-                                        deviceBoardPinData.setPin(abstractPin);
-
-                                    }
-
-                                    parametersObjects.add(directiveId);
-                                    break;
-
-                                case DYNAMIC:
-                                    for (ActionArgumentJson actionArgumentJson : writeActionData.getWriteActionJson().getArguments())
-                                        if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
-                                            SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
-                                            parametersObjects.add(sketchVariable);
-                                        }
-
-                                    break;
-
-                                case STATIC:
-                                    parametersObjects.add(getStaticVariable(deviceVariable.getType(), deviceVariable.getLiteral()));
-                                    break;
-
-                            }
-
-                        }
-
-                        LinkedList<String> directives = new LinkedList<>();
-                        LinkedList<SketchVariable> variables = new LinkedList<>();
-
-                        for (Object object : parametersObjects)
-                            if (object instanceof String)
-                                directives.add((String) object);
-                            else if (object instanceof SketchVariable)
-                                variables.add((SketchVariable) object);
-
-                        writeActionData.getSketchFunction().addInstruction(codeBuffer -> {
-                            codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
-                            return true;
-                        });
-
-                    }
-                }
+                for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
+                    if (instructionJson.isSdk())
+                        processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
 
             }
         }
+
+    }
+
+    public void processCustomFunction(LinkedList<DeviceBoardPinData> deviceBoardPinDatas, DeviceInstructionJson instructionJson, DeviceData device, DeviceWriter writer, ActionData data) {
+
+        String resultLabel = "";
+
+        String fname = instructionJson.getFname();
+        LinkedList<Object> parametersObjects = new LinkedList<>();
+
+        resultLabel = resultLabel.replaceAll("\\%remote_id\\%", device.getDeviceJson().getId().toUpperCase());
+        resultLabel = resultLabel.replaceAll("\\%remote_label\\%", device.getDeviceJson().getLabel());
+
+        if (fname != null && data instanceof ReadActionData) {
+
+            z:
+            for (DeviceActionJson deviceActionJson : writer.getBindingProcessor().getDeviceActionJsons())
+                if (deviceActionJson.getAction().equals(((ReadActionData) data).getReadActionJson().getId()))
+                    for (ActionResultJson actionResultJson : writer.getBindingProcessor().getActionResultJsons())
+                        if (actionResultJson.getAction().equals(deviceActionJson.getAction())) {
+                            StructureModifier structure = writer.getBindingProcessor().getStructure();
+                            resultLabel = structure.getVariable(actionResultJson.getVariable()).getLabel();
+                            break z;
+                        }
+
+        }
+
+        // Parametros
+        for (String parameter : instructionJson.getParameters()) {
+
+            DeviceVariable deviceVariable = getVariable(device.getResolverJson(), parameter);
+
+            switch (deviceVariable.getScope()) {
+
+                case PWMPIN:
+                case ANALOGPIN:
+                case DIGITALPIN:
+
+                    DeviceVariableType scope = deviceVariable.getScope();
+                    DeviceBoardPinData deviceBoardPinData = getSpecificPin(device.getDeviceJson().getPins(), deviceVariable.getTruePin(), deviceBoardPinDatas);
+
+                    String boardPinLabel = deviceBoardPinData.getBoardPin().getLabel();
+                    String directiveId = device.getDeviceJson().getId().toUpperCase() + "_" + boardPinLabel;
+                    Board board = deviceBoardPinData.getBoard();
+
+                    if (!deviceBoardPinData.isUsed()) {
+
+                        Pin abstractPin;
+
+                        if (scope == DeviceVariableType.DIGITALPIN)
+                            abstractPin = board.useDigitalPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+                        else if (scope == DeviceVariableType.ANALOGPIN)
+                            abstractPin = board.useAnalogPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+                        else
+                            abstractPin = board.usePWMPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+
+                        deviceBoardPinData.setUsed(true);
+                        deviceBoardPinData.setPin(abstractPin);
+
+                    }
+
+                    parametersObjects.add(directiveId);
+                    break;
+
+                case DYNAMIC:
+                    if (data instanceof WriteActionData) {
+                        for (ActionArgumentJson actionArgumentJson : ((WriteActionData) data).getWriteActionJson().getArguments())
+                            if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
+                                SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
+                                parametersObjects.add(sketchVariable);
+                            }
+                        break;
+                    }
+                    for (ActionArgumentJson actionArgumentJson : ((ReadActionData) data).getReadActionJson().getArguments())
+                        if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
+                            SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
+                            parametersObjects.add(sketchVariable);
+                        }
+                    break;
+
+                case STATIC:
+                    parametersObjects.add(getStaticVariable(deviceVariable.getType(), deviceVariable.getLiteral()));
+                    break;
+
+            }
+
+        }
+
+        LinkedList<String> directives = new LinkedList<>();
+        LinkedList<SketchVariable> variables = new LinkedList<>();
+
+        for (Object object : parametersObjects)
+            if (object instanceof String)
+                directives.add((String) object);
+            else if (object instanceof SketchVariable)
+                variables.add((SketchVariable) object);
+
+        String finalResultLabel = resultLabel;
+        data.getSketchFunction().addInstruction(codeBuffer -> {
+
+            if (data instanceof WriteActionData) {
+
+                codeBuffer.append(fname + "(", true);
+                for (int i = 0; i < parametersObjects.size(); i++) {
+                    String param = String.valueOf(parametersObjects.get(i));
+                    codeBuffer.append((i + 1 == parametersObjects.size()) ? param : param + ", ", false);
+                }
+                codeBuffer.append(");", false);
+                codeBuffer.appendBreakline();
+
+            } else if (finalResultLabel != null && !finalResultLabel.isEmpty()) {
+
+                codeBuffer.append(finalResultLabel + " = " + fname + "(", true);
+                for (int i = 0; i < parametersObjects.size(); i++) {
+                    String param = String.valueOf(parametersObjects.get(i));
+                    codeBuffer.append((i + 1 == parametersObjects.size()) ? param : param + ", ", false);
+                }
+                codeBuffer.append(");", false);
+                codeBuffer.appendBreakline();
+
+            } else {
+
+                codeBuffer.append(fname + "(", true);
+                for (int i = 0; i < parametersObjects.size(); i++) {
+                    String param = String.valueOf(parametersObjects.get(i));
+                    codeBuffer.append((i + 1 == parametersObjects.size()) ? param : param + ", ", false);
+                }
+                codeBuffer.append(");", false);
+                codeBuffer.appendBreakline();
+
+            }
+
+            return true;
+
+        });
+
+    }
+
+    public void processSdkFunction(LinkedList<DeviceBoardPinData> deviceBoardPinDatas, DeviceInstructionJson instructionJson, DeviceData device, DeviceWriter writer, ActionData data) {
+
+        String resultLabel = "";
+
+        SketchNativeFunctionType sdkFunction = getNativeFunction(instructionJson.getFname());
+        LinkedList<Object> parametersObjects = new LinkedList<>();
+
+        if (sdkFunction.getResult() != null && data instanceof ReadActionData) {
+
+            z:
+            for (DeviceActionJson deviceActionJson : writer.getBindingProcessor().getDeviceActionJsons())
+                if (deviceActionJson.getAction().equals(((ReadActionData) data).getReadActionJson().getId()))
+                    for (ActionResultJson actionResultJson : writer.getBindingProcessor().getActionResultJsons())
+                        if (actionResultJson.getAction().equals(deviceActionJson.getAction())) {
+                            StructureModifier structure = writer.getBindingProcessor().getStructure();
+                            resultLabel = structure.getVariable(actionResultJson.getVariable()).getLabel();
+                            break z;
+                        }
+
+        }
+
+        // Parametros
+        for (String parameter : instructionJson.getParameters()) {
+
+            DeviceVariable deviceVariable = getVariable(device.getResolverJson(), parameter);
+
+            switch (deviceVariable.getScope()) {
+
+                case PWMPIN:
+                case ANALOGPIN:
+                case DIGITALPIN:
+
+                    DeviceVariableType scope = deviceVariable.getScope();
+                    DeviceBoardPinData deviceBoardPinData = getSpecificPin(device.getDeviceJson().getPins(), deviceVariable.getTruePin(), deviceBoardPinDatas);
+
+                    String boardPinLabel = deviceBoardPinData.getBoardPin().getLabel();
+                    String directiveId = device.getDeviceJson().getId().toUpperCase() + "_" + boardPinLabel;
+                    Board board = deviceBoardPinData.getBoard();
+
+                    if (!deviceBoardPinData.isUsed()) {
+
+                        Pin abstractPin;
+
+                        if (scope == DeviceVariableType.DIGITALPIN)
+                            abstractPin = board.useDigitalPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+                        else if (scope == DeviceVariableType.ANALOGPIN)
+                            abstractPin = board.useAnalogPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+                        else
+                            abstractPin = board.usePWMPin(boardPinLabel, directiveId, deviceVariable.getPinMode());
+
+                        deviceBoardPinData.setUsed(true);
+                        deviceBoardPinData.setPin(abstractPin);
+
+                    }
+
+                    parametersObjects.add(directiveId);
+                    break;
+
+                case DYNAMIC:
+                    if (data instanceof WriteActionData) {
+                        for (ActionArgumentJson actionArgumentJson : ((WriteActionData) data).getWriteActionJson().getArguments())
+                            if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
+                                SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
+                                parametersObjects.add(sketchVariable);
+                            }
+                        break;
+                    }
+                    for (ActionArgumentJson actionArgumentJson : ((ReadActionData) data).getReadActionJson().getArguments())
+                        if (actionArgumentJson.getLabel().equals(deviceVariable.getName())) {
+                            SketchVariable sketchVariable = writer.getBindingProcessor().getStructure().getVariable(actionArgumentJson.getVariableId());
+                            parametersObjects.add(sketchVariable);
+                        }
+                    break;
+
+                case STATIC:
+                    parametersObjects.add(getStaticVariable(deviceVariable.getType(), deviceVariable.getLiteral()));
+                    break;
+
+            }
+
+        }
+
+        LinkedList<String> directives = new LinkedList<>();
+        LinkedList<SketchVariable> variables = new LinkedList<>();
+
+        for (Object object : parametersObjects)
+            if (object instanceof String)
+                directives.add((String) object);
+            else if (object instanceof SketchVariable)
+                variables.add((SketchVariable) object);
+
+        String finalResultLabel = resultLabel;
+        data.getSketchFunction().addInstruction(codeBuffer -> {
+            if (data instanceof WriteActionData)
+                codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
+            else if (finalResultLabel != null && !finalResultLabel.isEmpty())
+                codeBuffer.appendLine(sdkFunction.createCallAndSave(finalResultLabel, directives, variables, true));
+            else
+                codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
+            return true;
+        });
 
     }
 
