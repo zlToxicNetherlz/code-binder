@@ -121,7 +121,7 @@ public class HardwareProcessor extends Processor<HardwareComponentJson> {
 
                 sketchLiquidCrystalVariable.setVariables(lcd_register_select, lcd_read_write, lcd_enable, lcd_db4, lcd_db5, lcd_db6, lcd_db7);
 
-                board.getSketch().addLibraryVariable(sketchLiquidCrystalVariable);
+                //board.getSketch().addLibraryVariable(sketchLiquidCrystalVariable);
 
                 board.getSketch().addPreprocessorDirective(lcd_register_select);
                 board.getSketch().addPreprocessorDirective(lcd_read_write);
@@ -157,7 +157,7 @@ public class HardwareProcessor extends Processor<HardwareComponentJson> {
             sketchKeypadVariable.setColumns(pins[0], pins[1], pins[2], pins[3]);
 
             board.getSketch().addPreprocessorDirective(sketchHeaderKeypadLibrary);
-            board.getSketch().addLibraryVariable(sketchKeypadVariable);
+            //board.getSketch().addLibraryVariable(sketchKeypadVariable);
 
             getStructure().getOrPut(port.getId(), sketchKeypadVariable);
             return;

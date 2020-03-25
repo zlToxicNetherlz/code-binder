@@ -1,16 +1,14 @@
 package co.edu.eafit.code.binder.resolver.json.macros;
 
 import co.edu.eafit.code.binder.resolver.processors.data.Macro;
-import co.edu.eafit.code.binder.resolver.processors.macros.CallFromMacro;
-import co.edu.eafit.code.binder.resolver.processors.macros.CustomVariableMacro;
-import co.edu.eafit.code.binder.resolver.processors.macros.DefineMacro;
-import co.edu.eafit.code.binder.resolver.processors.macros.IncludeMacro;
+import co.edu.eafit.code.binder.resolver.processors.macros.*;
 
 public enum MacroType {
     INCLUDE(IncludeMacro.class),
     DEFINE(DefineMacro.class),
     CUSTOMVARIABLE(CustomVariableMacro.class),
-    CALLFROM(CallFromMacro.class);
+    CALLFROM(CallFromMacro.class),
+    BLANKVARIABLE(BlankVariableMacro.class);
 
     Class clazz;
 

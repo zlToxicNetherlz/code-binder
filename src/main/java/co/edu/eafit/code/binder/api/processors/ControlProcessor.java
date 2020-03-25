@@ -166,7 +166,7 @@ public class ControlProcessor extends Processor<ControlComponentJson> {
 
             board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
             board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
-            board.getSketch().addLibraryVariable(pidVariable);
+            //board.getSketch().addLibraryVariable(pidVariable);
 
             board.getSketch().getSetupFunction().addInstruction(pidVariable.operateSetMode(SketchPidVariable.ModeType.AUTOMATIC));
 

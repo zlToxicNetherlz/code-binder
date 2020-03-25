@@ -26,7 +26,6 @@ import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.Sk
 import co.edu.eafit.code.generator.metamodel.arduino.classes.sketch.variables.SketchIntegerVariable;
 import lombok.Getter;
 
-import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +46,7 @@ public class DeviceProcessor {
             for (DeviceJson deviceJson : devicesJson)
                 devices.add(deviceJson);
 
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -125,11 +124,13 @@ public class DeviceProcessor {
 
             if (actionJson.getName().equals(readActionData.getReadActionJson().getSubType())) {
 
-                System.out.println("[Generating](READ) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
+                // System.out.println("[Generating](READ) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
                 for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
                     if (instructionJson.isSdk())
                         processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
+                    else
+                        processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
 
             }
         }
@@ -150,11 +151,13 @@ public class DeviceProcessor {
 
             if (actionJson.getName().equals(writeActionData.getWriteActionJson().getSubType())) {
 
-                System.out.println("[Generating](WRITE) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
+                // System.out.println("[Generating](WRITE) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
                 for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
                     if (instructionJson.isSdk())
                         processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
+                    else
+                        processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
 
             }
         }

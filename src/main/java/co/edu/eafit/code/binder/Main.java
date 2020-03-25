@@ -12,7 +12,7 @@ public class Main {
         try {
 
             //BinderAPI.setupServer(DEBUG ? 9100 : 9200);
-            Project project = BinderAPI.getLocalProject("LedRGB");
+            Project project = BinderAPI.getLocalProject("DT");
             project.getBoards().get(0).generateCode().printAll();
 
             PluginLoader.load();
