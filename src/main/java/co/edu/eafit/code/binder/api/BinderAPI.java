@@ -43,7 +43,7 @@ public class BinderAPI {
     public static Project getLocalProject(String projectName) throws FileNotFoundException {
 
         Gson gson = new Gson();
-        RemoteJson json = gson.fromJson(new FileReader("C:/Users/abrah/Desktop/Integrador/" + projectName + ".json"), RemoteJson.class);
+        RemoteJson json = gson.fromJson(new FileReader("C:\\Users\\Admin\\Desktop\\Proyecto Integrador 1\\" + projectName + ".json"), RemoteJson.class);
 
         return getProject(json);
 
