@@ -1,3 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: co.edu.eafit.code.binder.Main
+Main-Class: com.variamos.moduino.binder.Main
 

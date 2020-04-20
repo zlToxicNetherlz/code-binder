@@ -1,20 +1,19 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+![https://github.com/zlToxicNetherlz/moduino](https://img.shields.io/badge/Status-Under%20Development-lightgreen?style=for-the-badge)
+# Variamos-Moduino Binder
+This project is the implementation of moduino in the VariaMos backend for the generation of the Arduino code through mxGraph diagrams.
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+This project was created mainly to be used as a library for the development section of the [VariaMos](http://variamos.dis.eafit.edu.co/) Arduino code generation.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+# Tasks
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+- [x] Update README.md
+- [x] Add a new release.
+- [ ] Add Jitpack
+- [ ] Fix known issues
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+# Authors
+
+- Abraham M. Lora
+- Daniel García
+- Mateo Montes
+- Andrés Lopez

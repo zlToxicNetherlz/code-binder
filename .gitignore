@@ -1,5 +1,7 @@
 # Compiled class file
 *.class
+.idea
+code-binder.iml
 
 # Log file
 *.log
