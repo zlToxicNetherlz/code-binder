@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -33,8 +34,11 @@ public class VariamosResolver {
         try {
 
             URL url = new URL(ENDPOINT);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
+            URLConnection con = url.openConnection();
+
+            con.addRequestProperty("User-Agent", "Mozilla");
+            con.setReadTimeout(5000);
+            con.setConnectTimeout(5000);
 
             StringBuilder textBuilder = new StringBuilder();
 
