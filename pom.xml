@@ -6,7 +6,7 @@
 
     <groupId>co.edu.eafit</groupId>
     <artifactId>variamos-code-binder</artifactId>
-    <version>v3.02</version>
+    <version>v3.03</version>
     <build>
         <plugins>
             <plugin>
