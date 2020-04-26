@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 public class VariamosResolver {
 
-    public static final String ENDPOINT = "https://gist.githubusercontent.com/zlToxicNetherlz/58225e1dbb13167e440f6600d6cb3fd6/raw/5978e54307c780420f4e0c6bf3f2409a49cdbc50/devices.json";
+    public static final String ENDPOINT = "https://cdn.itoxic.me/devices.json";
     // public static final String LOCAL = "C:/Users/abrah/Desktop/Integrador/devices.json";
 
     public static DeviceJson[] resolveJSON() throws Exception {
