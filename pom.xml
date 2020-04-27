@@ -6,7 +6,7 @@
 
     <groupId>co.edu.eafit</groupId>
     <artifactId>variamos-code-binder</artifactId>
-    <version>v3.04</version>
+    <version>v3.08</version>
     <build>
         <plugins>
             <plugin>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>com.github.zlToxicNetherlz</groupId>
             <artifactId>moduino</artifactId>
-            <version>2020-v1.0.6</version>
+            <version>2020-v1.0.8</version>
             <scope>compile</scope>
         </dependency>
 
