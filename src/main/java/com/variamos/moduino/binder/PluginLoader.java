@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
+@Deprecated
 public class PluginLoader {
 
     public static void load() throws Exception {

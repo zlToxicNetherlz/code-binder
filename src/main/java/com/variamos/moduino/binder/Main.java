@@ -15,7 +15,7 @@ public class Main {
             Project project = BinderAPI.getLocalProject("ledBoton");
             project.getBoards().get(0).generateCode().printAll();
 
-            PluginLoader.load();
+            // PluginLoader.load();
 
         } catch (Exception e) {
             e.printStackTrace();
