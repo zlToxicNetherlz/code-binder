@@ -16,11 +16,8 @@ import java.nio.charset.StandardCharsets;
 public class VariamosResolver {
 
     public static final String ENDPOINT = "https://cdn.itoxic.me/devices.json";
-    // public static final String LOCAL = "C:/Users/abrah/Desktop/Integrador/devices.json";
 
     public static DeviceJson[] resolveJSON() throws Exception {
-
-
 
         Gson gson = new Gson();
         DeviceJson[] json = gson.fromJson(getRemoteData(), DeviceJson[].class);
@@ -55,12 +52,6 @@ public class VariamosResolver {
             System.out.println("No se lograron recibir datos del ENDPOINT :: " + ENDPOINT + ", para la lectura de los dispositivos.");
             throw e;
         }
-
-    }
-
-    public static void main(String[] args) throws FileNotFoundException {
-
-        VariamosResolver resolver = new VariamosResolver();
 
     }
 
