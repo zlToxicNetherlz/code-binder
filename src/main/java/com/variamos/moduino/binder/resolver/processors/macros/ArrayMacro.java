@@ -23,6 +23,7 @@ public class ArrayMacro extends Macro {
                 return false;
 
             });
+
         }else{
             String values = parameters[2];
             sketch.addInstruction(codeBuffer -> {
