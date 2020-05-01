@@ -4,6 +4,9 @@ import com.variamos.moduino.binder.resolver.processors.data.Macro;
 import com.variamos.moduino.binder.resolver.processors.macros.*;
 
 public enum MacroType {
+    ARRAY(ArrayMacro.class),
+    CONSTVARIABLE(ConstVariableMacro.class),
+    MATRIX(MatrixMacro.class),
     INCLUDE(IncludeMacro.class),
     DEFINE(DefineMacro.class),
     CUSTOMVARIABLE(CustomVariableMacro.class),

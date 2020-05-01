@@ -29,7 +29,8 @@ public class CustomVariableMacro extends Macro {
         sketch.addInstruction(codeBuffer -> {
 
             codeBuffer.append(datatype + " " + label + "(", true);
-            if (finalFparams != null && finalFparams.length > 0)
+
+            if (finalFparams != null)
                 for (int i = 0; i < finalFparams.length; i++) {
                     String param = finalFparams[i];
                     codeBuffer.append((i + 1 == finalFparams.length) ? param : param + ", ", false);

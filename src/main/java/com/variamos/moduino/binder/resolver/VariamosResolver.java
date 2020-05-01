@@ -4,10 +4,8 @@ import com.variamos.moduino.binder.resolver.json.DeviceJson;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;

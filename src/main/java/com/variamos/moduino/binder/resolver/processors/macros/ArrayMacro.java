@@ -39,9 +39,13 @@ public class ArrayMacro extends Macro {
                 return false;
 
             });
+<<<<<<< HEAD
             /**En caso de que se haya definido el arreglo sin haberle dado un tamaño
              * entonces lo definimos unicamente sin darle un tamaño
              */
+=======
+
+>>>>>>> dfd3679b2283308d3d67bfea3d7837800bbba6e3
         }else{
             String values = parameters[2];
             sketch.addInstruction(codeBuffer -> {
