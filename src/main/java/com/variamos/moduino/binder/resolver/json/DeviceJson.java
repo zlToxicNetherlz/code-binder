@@ -12,6 +12,7 @@ import lombok.ToString;
 public class DeviceJson {
 
     private String name;
+    private boolean special;
 
     private String[] digitalPins, analogPins, pwmPins;
 

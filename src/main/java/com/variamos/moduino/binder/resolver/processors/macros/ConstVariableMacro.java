@@ -17,7 +17,7 @@ public class ConstVariableMacro extends Macro {
 
         sketch.addInstruction(codeBuffer -> {
 
-            codeBuffer.appendLine("const "+datatype + " " + label + " = "+value+";");
+            codeBuffer.appendLine("const "+ datatype + " " + label + " = " + value + ";");
             codeBuffer.appendBreakline();
             return false;
 

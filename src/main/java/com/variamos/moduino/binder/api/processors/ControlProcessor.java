@@ -13,8 +13,6 @@ import com.variamos.moduino.binder.api.structure.StructureModifier;
 import com.variamos.moduino.binder.api.structure.dynamic.*;
 import com.variamos.moduino.binder.model.library.SketchHeaderPidLibrary;
 import com.variamos.moduino.binder.model.variables.SketchPidVariable;
-import com.variamos.moduino.binder.api.structure.dynamic.*;
-import com.variamos.moduino.binder.api.type.ControlComponentType;
 import me.itoxic.moduino.metamodel.arduino.entries.model.pins.AnalogPin;
 import me.itoxic.moduino.metamodel.arduino.entries.model.uno.ArduinoUnoBoard;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.SketchFunction;
@@ -168,7 +166,7 @@ public class ControlProcessor extends Processor<ControlComponentJson> {
 
             board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
             board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
-            //board.getSketch().addLibraryVariable(pidVariable);
+            // todo board.getSketch().addVariables(pidVariable);
 
             board.getSketch().getSetupFunction().addInstruction(pidVariable.operateSetMode(SketchPidVariable.ModeType.AUTOMATIC));
 

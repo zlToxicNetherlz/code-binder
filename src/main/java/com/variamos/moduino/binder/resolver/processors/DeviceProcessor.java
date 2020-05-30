@@ -7,7 +7,6 @@ import com.variamos.moduino.binder.api.json.hardware.PinJson;
 import com.variamos.moduino.binder.api.processors.HardwareProcessor;
 import com.variamos.moduino.binder.api.structure.StructureModifier;
 import com.variamos.moduino.binder.api.structure.dynamic.*;
-import com.variamos.moduino.binder.api.structure.dynamic.*;
 import com.variamos.moduino.binder.resolver.VariamosResolver;
 import com.variamos.moduino.binder.resolver.json.DeviceJson;
 import com.variamos.moduino.binder.resolver.json.actions.DeviceReadActionJson;
@@ -127,11 +126,12 @@ public class DeviceProcessor {
 
                 // System.out.println("[Generating](READ) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
-                for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
-                    if (instructionJson.isSdk())
-                        processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
-                    else
-                        processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
+                if(actionJson.getInstructions() != null)
+                    for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
+                        if (instructionJson.isSdk())
+                            processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
+                        else
+                            processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, readActionData);
 
             }
         }
@@ -148,20 +148,21 @@ public class DeviceProcessor {
                 continue;
             }
 
-        for (DeviceWriteActionJson actionJson : device.getResolverJson().getWriteActions()) {
+        if(device.getResolverJson().getWriteActions() != null)
+            for (DeviceWriteActionJson actionJson : device.getResolverJson().getWriteActions()) {
 
-            if (actionJson.getName().equals(writeActionData.getWriteActionJson().getSubType())) {
+                if (actionJson.getName().equals(writeActionData.getWriteActionJson().getSubType())) {
 
-                // System.out.println("[Generating](WRITE) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
+                    // System.out.println("[Generating](WRITE) " + device.getResolverJson().getName() + " >> function (" + actionJson.getName() + ")");
 
-                for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
-                    if (instructionJson.isSdk())
-                        processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
-                    else
-                        processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
+                    for (DeviceInstructionJson instructionJson : actionJson.getInstructions())
+                        if (instructionJson.isSdk())
+                            processSdkFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
+                        else
+                            processCustomFunction(deviceBoardPinDatas, instructionJson, device, writer, writeActionData);
 
+                }
             }
-        }
 
     }
 

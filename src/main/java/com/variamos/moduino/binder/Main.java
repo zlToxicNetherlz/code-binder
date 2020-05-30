@@ -12,7 +12,7 @@ public class Main {
         try {
 
             //BinderAPI.setupServer(DEBUG ? 9100 : 9200);
-            Project project = BinderAPI.getLocalProject("ledBoton");
+            Project project = BinderAPI.getLocalProject("timer");
             project.getBoards().get(0).generateCode().printAll();
 
             // PluginLoader.load();
