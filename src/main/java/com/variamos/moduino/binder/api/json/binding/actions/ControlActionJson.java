@@ -9,5 +9,9 @@ public class ControlActionJson {
 
     private String id;
     private String label;
+    private String type;
+    private String controlType;
+
+    private ActionArgumentJson[] arguments;
 
 }

@@ -10,7 +10,7 @@ public class ActionArgumentJson {
     private String id;
     private String label;
     private String type;
-    private String subType;
+    private String dataType; // todo cambio para pruebas
 
     private String variableId;
 
