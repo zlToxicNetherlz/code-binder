@@ -13,5 +13,10 @@ public class ControlActionJson {
     private String controlType;
 
     private ActionArgumentJson[] arguments;
+    private ConfigurationArgumentJson[] configuration;
+
+    public boolean isContinuous() {
+        return controlType.equals("continuous");
+    }
 
 }

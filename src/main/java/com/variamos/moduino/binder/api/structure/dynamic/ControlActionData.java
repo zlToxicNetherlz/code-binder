@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-public class ControlActionData {
+public class ControlActionData extends ActionData {
 
     private String id;
     private String label;

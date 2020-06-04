@@ -18,7 +18,9 @@ import com.variamos.moduino.binder.api.structure.StructureModifier;
 import com.variamos.moduino.binder.api.structure.dynamic.*;
 import com.variamos.moduino.binder.api.type.PredicateComponentType;
 import com.variamos.moduino.binder.api.type.VariableComponentType;
+import com.variamos.moduino.binder.model.library.SketchHeaderPidLibrary;
 import com.variamos.moduino.binder.model.variables.SketchLiquidCrystalVariable;
+import com.variamos.moduino.binder.model.variables.SketchPidVariable;
 import com.variamos.moduino.binder.resolver.processors.DeviceProcessor;
 import com.variamos.moduino.binder.resolver.processors.data.DeviceWriter;
 import me.itoxic.moduino.metamodel.arduino.entries.model.pins.AnalogPin;
@@ -35,6 +37,7 @@ import me.itoxic.moduino.metamodel.arduino.entries.sketch.operations.SketchElseO
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.operations.SketchIfOperation;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.preloads.SketchNativeFunctionType;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.preprocessor.SketchDefineDirective;
+import me.itoxic.moduino.metamodel.arduino.entries.sketch.preprocessor.SketchIncludeDirective;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.variables.*;
 import lombok.Getter;
 
@@ -151,6 +154,16 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     controlActionData.setId(controlActionJson.getId());
                     controlActionData.setLabel(controlActionJson.getLabel());
 
+                    if(controlActionJson.isContinuous()) {
+
+                        SketchFunction wfunction = new SketchFunction("action_" + controlActionJson.getLabel(), SketchFunctionType.VOID, false);
+
+                        controlActionData.setFunction(wfunction);
+                        board.getSketch().addFunction(wfunction);
+                        getStructure().getOrPut(controlActionJson.getId(), wfunction);
+
+                    }
+
                     controlActionDatas.add(controlActionData);
                     break;
 
@@ -243,8 +256,9 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                             SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
                             function.addInstruction(functionCall);
                         } else if (commonExecutionActionJson.getActionType().equals("controlAction")){
-                            //todo: y si es una controlAction que?
-                            int j=0;
+                            ControlActionData data = getControlAction(commonExecutionActionJson.getAction());
+                            SketchFunctionCall functionCall = new SketchFunctionCall(data.getSketchFunction());
+                            function.addInstruction(functionCall);
                         }
                     }
                     break;
@@ -562,6 +576,8 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
         }
 
+        boolean hasContinousControls = false;
+
         for (WriteActionData writeActionData : writeActionDatas)
             for (ActionArgumentJson actionArgumentJson : writeActionData.getWriteActionJson().getArguments())
                 for (ActionVariableJson actionVariables : actionVariableJsons)
@@ -573,6 +589,53 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                 for (ActionVariableJson actionVariables : actionVariableJsons)
                     if (actionArgumentJson.getId().equals(actionVariables.getActionArgument()))
                         actionArgumentJson.setVariableId(actionVariables.getVariable());
+
+        for (ControlActionData controlActionData : controlActionDatas) { // ControlActions continuous
+            if(controlActionData.getControlActionJson().isContinuous()) {
+
+                if(!hasContinousControls) {
+                    SketchIncludeDirective includeDirective = new SketchHeaderPidLibrary();
+                    board.getSketch().addPreprocessorDirective(includeDirective);
+                    hasContinousControls = true;
+                }
+
+                String suffix = "_" + controlActionData.getLabel();
+                SketchPidVariable pidVariable = new SketchPidVariable("pid_" + controlActionData.getLabel(), false, true);
+
+                SketchDoubleVariable inputVariable = new SketchDoubleVariable("ctl_input" + suffix, 0.0);
+                SketchDoubleVariable outputVariable = new SketchDoubleVariable("ctl_output" + suffix, 0.0);
+                SketchDoubleVariable setpointVariable = new SketchDoubleVariable("ctl_sp" + suffix, controlActionData.getValueSetPoint());
+
+                SketchDoubleVariable kpVariable = new SketchDoubleVariable("ctl_conskp" + suffix, controlActionData.getControllerData().getProportional());
+                SketchDoubleVariable kiVariable = new SketchDoubleVariable("ctl_conski" + suffix, controlActionData.getControllerData().getIntegral());
+                SketchDoubleVariable kdVariable = new SketchDoubleVariable("ctl_conskd" + suffix, controlActionData.getControllerData().getDerivate());
+
+                pidVariable.setInput(inputVariable);
+                pidVariable.setOutput(outputVariable);
+                pidVariable.addSetPoint(setpointVariable);
+
+                pidVariable.setKp(kpVariable);
+                pidVariable.setKi(kiVariable);
+                pidVariable.setKd(kdVariable);
+
+                board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
+                board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
+                // todo board.getSketch().addVariables(pidVariable);
+
+                board.getSketch().getSetupFunction().addInstruction(pidVariable.operateSetMode(SketchPidVariable.ModeType.AUTOMATIC));
+
+                getStructure().getOrPut(outputVariable.getLabel(), outputVariable);
+                getStructure().getOrPut(inputVariable.getLabel(), inputVariable);
+                getStructure().getOrPut(setpointVariable.getLabel(), setpointVariable);
+
+                getStructure().getOrPut(kpVariable.getLabel(), kpVariable);
+                getStructure().getOrPut(kiVariable.getLabel(), kiVariable);
+                getStructure().getOrPut(kdVariable.getLabel(), kdVariable);
+
+                getStructure().getOrPut(controlActionData.getId(), pidVariable);
+
+            }
+        }
 
         for (DeviceActionJson deviceActionJson : deviceActionJsons) { // Write and Read
 
