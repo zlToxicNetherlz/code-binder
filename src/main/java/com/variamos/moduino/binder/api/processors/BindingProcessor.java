@@ -640,7 +640,7 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
                 board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
                 board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
-                board.getSketch().addVariables(pidVariable);
+                board.getSketch().addLibraryVariable(pidVariable);
 
                 board.getSketch().getSetupFunction().addInstruction(pidVariable.operateSetMode(SketchPidVariable.ModeType.AUTOMATIC));
                 controlActionData.getSketchFunction().addInstruction(codeBuffer -> {
