@@ -1,10 +1,7 @@
 package com.variamos.moduino.binder.api.processors;
 
 import com.variamos.moduino.binder.api.json.binding.*;
-import com.variamos.moduino.binder.api.json.binding.actions.ActionArgumentJson;
-import com.variamos.moduino.binder.api.json.binding.actions.ControlActionJson;
-import com.variamos.moduino.binder.api.json.binding.actions.ReadActionJson;
-import com.variamos.moduino.binder.api.json.binding.actions.WriteActionJson;
+import com.variamos.moduino.binder.api.json.binding.actions.*;
 import com.variamos.moduino.binder.api.json.binding.relations.*;
 import com.variamos.moduino.binder.api.json.binding.relations.base.CommonExecutionActionJson;
 import com.variamos.moduino.binder.api.json.binding.relations.base.CommonPhaseJson;
@@ -23,10 +20,12 @@ import com.variamos.moduino.binder.model.variables.SketchLiquidCrystalVariable;
 import com.variamos.moduino.binder.model.variables.SketchPidVariable;
 import com.variamos.moduino.binder.resolver.processors.DeviceProcessor;
 import com.variamos.moduino.binder.resolver.processors.data.DeviceWriter;
+import me.itoxic.moduino.generator.buffer.CodeBuffer;
 import me.itoxic.moduino.metamodel.arduino.entries.model.pins.AnalogPin;
 import me.itoxic.moduino.metamodel.arduino.entries.model.pins.DigitalPin;
 import me.itoxic.moduino.metamodel.arduino.entries.model.uno.ArduinoUnoBoard;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.SketchFunction;
+import me.itoxic.moduino.metamodel.arduino.entries.sketch.SketchInstruction;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.SketchVariable;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.conditions.SketchBooleanCondition;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.conditions.SketchIntegerCondition;
@@ -590,25 +589,46 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                     if (actionArgumentJson.getId().equals(actionVariables.getActionArgument()))
                         actionArgumentJson.setVariableId(actionVariables.getVariable());
 
+        for (ControlActionData controlActionData : controlActionDatas)
+            for (ActionArgumentJson actionArgumentJson : controlActionData.getControlActionJson().getArguments())
+                for (ActionVariableJson actionVariables : actionVariableJsons)
+                    if (actionArgumentJson.getId().equals(actionVariables.getActionArgument()))
+                        actionArgumentJson.setVariableId(actionVariables.getVariable());
+
         for (ControlActionData controlActionData : controlActionDatas) { // ControlActions continuous
             if(controlActionData.getControlActionJson().isContinuous()) {
 
-                if(!hasContinousControls) {
+                SketchDoubleVariable outputVariable = null;
+
+                for(ActionResultJson actionResultJson : actionResultJsons)
+                    if(actionResultJson.getAction() == controlActionData.getId()) {
+                        outputVariable = getStructure().getVariable(actionResultJson.getVariable());
+                        break;
+                    }
+
+                if(outputVariable == null)
+                    break;
+
+                if(!hasContinousControls) { // is continous?
+
                     SketchIncludeDirective includeDirective = new SketchHeaderPidLibrary();
                     board.getSketch().addPreprocessorDirective(includeDirective);
                     hasContinousControls = true;
+
                 }
 
+                ActionArgumentJson[] arguments = controlActionData.getControlActionJson().getArguments();
+                ConfigurationArgumentJson[] configurations = controlActionData.getControlActionJson().getConfiguration();
+
                 String suffix = "_" + controlActionData.getLabel();
-                SketchPidVariable pidVariable = new SketchPidVariable("pid_" + controlActionData.getLabel(), false, true);
+                SketchPidVariable pidVariable = new SketchPidVariable("pid" + suffix, false, true);
 
-                SketchDoubleVariable inputVariable = new SketchDoubleVariable("ctl_input" + suffix, 0.0);
-                SketchDoubleVariable outputVariable = new SketchDoubleVariable("ctl_output" + suffix, 0.0);
-                SketchDoubleVariable setpointVariable = new SketchDoubleVariable("ctl_sp" + suffix, controlActionData.getValueSetPoint());
+                SketchDoubleVariable setpointVariable = getStructure().getVariable(arguments[0].getVariableId());
+                SketchDoubleVariable inputVariable = getStructure().getVariable(arguments[1].getVariableId());
 
-                SketchDoubleVariable kpVariable = new SketchDoubleVariable("ctl_conskp" + suffix, controlActionData.getControllerData().getProportional());
-                SketchDoubleVariable kiVariable = new SketchDoubleVariable("ctl_conski" + suffix, controlActionData.getControllerData().getIntegral());
-                SketchDoubleVariable kdVariable = new SketchDoubleVariable("ctl_conskd" + suffix, controlActionData.getControllerData().getDerivate());
+                SketchDoubleVariable kpVariable = new SketchDoubleVariable("ctl_conskp" + suffix, Double.parseDouble(configurations[0].getValue()));
+                SketchDoubleVariable kiVariable = new SketchDoubleVariable("ctl_conski" + suffix, Double.parseDouble(configurations[1].getValue()));
+                SketchDoubleVariable kdVariable = new SketchDoubleVariable("ctl_conskd" + suffix, Double.parseDouble(configurations[2].getValue()));
 
                 pidVariable.setInput(inputVariable);
                 pidVariable.setOutput(outputVariable);
@@ -620,9 +640,13 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
                 board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
                 board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
-                // todo board.getSketch().addVariables(pidVariable);
+                board.getSketch().addVariables(pidVariable);
 
                 board.getSketch().getSetupFunction().addInstruction(pidVariable.operateSetMode(SketchPidVariable.ModeType.AUTOMATIC));
+                controlActionData.getSketchFunction().addInstruction(codeBuffer -> {
+                    codeBuffer.appendLine(pidVariable.getLabel() + ".Compute();");
+                    return false;
+                });
 
                 getStructure().getOrPut(outputVariable.getLabel(), outputVariable);
                 getStructure().getOrPut(inputVariable.getLabel(), inputVariable);
