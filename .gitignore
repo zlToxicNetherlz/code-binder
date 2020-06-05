@@ -12,6 +12,7 @@ target
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
+!temp/moduino-2020-v1.2.0.jar
 
 # Package Files #
 *.jar
