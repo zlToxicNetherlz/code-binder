@@ -83,7 +83,7 @@ public class BinderAPI {
         hardwareProcessor.compose(remoteJson.getHardwareComponents(), board);
         machineProcessor.compose(remoteJson.getMachineComponents(), board);
         bindingProcessor.compose(remoteJson.getBindingComponents(), board);
-        controlProcessor.compose(remoteJson.getControlComponents(), board);
+        // controlProcessor.compose(remoteJson.getControlComponents(), board);
 
         composeLoopFunction(machineProcessor, board);
         clearCache();

@@ -116,8 +116,8 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
                     if (variableJson.getType() == VariableComponentType.ANALOG_VARIABLE) {
 
-                        Float value = Float.parseFloat(variableJson.getValue());
-                        SketchFloatVariable variable = new SketchFloatVariable(variableJson.getLabel(), value);
+                        Double value = Double.parseDouble(variableJson.getValue());
+                        SketchDoubleVariable variable = new SketchDoubleVariable(variableJson.getLabel(), value);
 
                         board.getSketch().addVariable(variable);
                         getStructure().getOrPut(variableJson.getId(), variable);
@@ -525,8 +525,8 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
             SketchVariable v2 = getStructure().getVariable(predicateReadJson.getSecondaryVariable());
 
             //todo: se necesita SketchFloatCondition por que los valores son decimales ¿y si son string variables que?
-            SketchIntegerVariable primaryVar=new  SketchIntegerVariable(v1.getLabel(),Math.round((float)v1.getValue()));
-            SketchIntegerVariable secondaryVar=new  SketchIntegerVariable(v2.getLabel(),Math.round((float)v2.getValue()));
+            SketchIntegerVariable primaryVar=new  SketchIntegerVariable(v1.getLabel(), ((Double) v1.getValue()).intValue());
+            SketchIntegerVariable secondaryVar=new  SketchIntegerVariable(v2.getLabel(), ((Double) v2.getValue()).intValue());
 
             SketchIntegerCondition condition = new SketchIntegerCondition(primaryVar, secondaryVar, operatorType.getComparatorType());
             predicateFunction.setResultOperation(condition);
@@ -597,11 +597,10 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
 
         for (ControlActionData controlActionData : controlActionDatas) { // ControlActions continuous
             if(controlActionData.getControlActionJson().isContinuous()) {
-
                 SketchDoubleVariable outputVariable = null;
 
                 for(ActionResultJson actionResultJson : actionResultJsons)
-                    if(actionResultJson.getAction() == controlActionData.getId()) {
+                    if (actionResultJson.getAction().equals(controlActionData.getId())) {
                         outputVariable = getStructure().getVariable(actionResultJson.getVariable());
                         break;
                     }
@@ -638,7 +637,6 @@ public class BindingProcessor extends Processor<BindingComponentJson> {
                 pidVariable.setKi(kiVariable);
                 pidVariable.setKd(kdVariable);
 
-                board.getSketch().addVariables(outputVariable, inputVariable, setpointVariable);
                 board.getSketch().addVariables(kpVariable, kiVariable, kdVariable);
                 board.getSketch().addLibraryVariable(pidVariable);
 

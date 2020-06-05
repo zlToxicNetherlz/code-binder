@@ -22,7 +22,7 @@ import me.itoxic.moduino.metamodel.arduino.entries.Board;
 import me.itoxic.moduino.metamodel.arduino.entries.model.Pin;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.SketchVariable;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.preloads.SketchNativeFunctionType;
-import me.itoxic.moduino.metamodel.arduino.entries.sketch.variables.SketchFloatVariable;
+import me.itoxic.moduino.metamodel.arduino.entries.sketch.variables.SketchDoubleVariable;
 import me.itoxic.moduino.metamodel.arduino.entries.sketch.variables.SketchIntegerVariable;
 import lombok.Getter;
 
@@ -410,7 +410,9 @@ public class DeviceProcessor {
             case "int":
                 return new SketchIntegerVariable(Integer.valueOf(literal));
             case "float":
-                return new SketchFloatVariable(Float.valueOf(literal));
+                return new SketchDoubleVariable(Double.valueOf(literal)); // temporal todo
+            case "double":
+                return new SketchDoubleVariable(Double.valueOf(literal));
         }
         return null;
     }

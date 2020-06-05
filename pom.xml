@@ -7,7 +7,7 @@
     <groupId>co.edu.eafit</groupId>
     <artifactId>variamos-code-binder</artifactId>
     <description>Unifier of code generation via moduino with the development of VariaMos models</description>
-    <version>v3.08</version>
+    <version>v3.10</version>
 
     <build>
         <plugins>
