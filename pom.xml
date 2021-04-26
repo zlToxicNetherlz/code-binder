@@ -7,61 +7,83 @@
     <groupId>co.edu.eafit</groupId>
     <artifactId>variamos-code-binder</artifactId>
     <description>Unifier of code generation via moduino with the development of VariaMos models</description>
-    <version>v3.10</version>
+    <version>2021-v3.13</version>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>nexus-public-repo</id>
+            <url>https://nexus.toxic.sh/repository/maven-releases/</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-public-repo</id>
+            <url>https://nexus.toxic.sh/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.4.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.10</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.my.App</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-        <!-- Temporally disabled
-        <dependency>
-            <groupId>com.github.zlToxicNetherlz</groupId>
-            <artifactId>moduino</artifactId>
-            <version>2020-v1.1.2</version>
-            <scope>compile</scope>
-        </dependency> -->
 
+        <!-- Dependencia necesaria para la generación de código basada en moduino -->
         <dependency>
-            <groupId>com.github.zlToxicNetherlz</groupId>
+            <groupId>sh.toxic</groupId>
             <artifactId>moduino</artifactId>
-            <version>2020-v1.2.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/temp/moduino-2020-v1.2.0.jar</systemPath>
+            <version>2021-v1.2.2</version>
+            <scope>compile</scope>
         </dependency>
 
-        <dependency>  <!-- Dependencia necesaria para el manejo de las pruebas unitarias -->
+        <!-- Dependencia necesaria para el manejo de las pruebas unitarias -->
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
 
-        <dependency> <!-- Dependencia necesaria para el manejo de los datos relacionados con formatos JSON -->
+        <!-- Dependencia necesaria para el manejo de los datos relacionados con formatos JSON -->
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.5</version>

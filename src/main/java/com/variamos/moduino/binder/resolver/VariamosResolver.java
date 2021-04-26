@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class VariamosResolver {
 
-    public static final String ENDPOINT = "https://cdn.itoxic.me/devices.json";
+    public static final String ENDPOINT = "https://gist.githubusercontent.com/ToxicSSJ/58225e1dbb13167e440f6600d6cb3fd6/raw/devices.json";
 
     public static DeviceJson[] resolveJSON() throws Exception {
 

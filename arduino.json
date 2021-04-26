@@ -1,0 +1,354 @@
+{
+    "name": "Mi proyecto",
+    "hardware": [
+        {
+            "board": {
+                "id": "id_1",
+                "label": "ArduinoUNO",
+                "type": "ArduinoUNO",
+                "pins": [
+                    {
+                        "id": "id_2",
+                        "label": "2",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_3",
+                        "label": "4",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_4",
+                        "label": "7",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_5",
+                        "label": "8",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_6",
+                        "label": "12",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_7",
+                        "label": "13",
+                        "type": "digital"
+                    },
+                    {
+                        "id": "id_8",
+                        "label": "A0",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_9",
+                        "label": "A1",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_10",
+                        "label": "A2",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_11",
+                        "label": "A3",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_12",
+                        "label": "A4",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_13",
+                        "label": "A5",
+                        "type": "analog"
+                    },
+                    {
+                        "id": "id_14",
+                        "label": "3",
+                        "type": "pwm"
+                    },
+                    {
+                        "id": "id_15",
+                        "label": "5",
+                        "type": "pwm"
+                    },
+                    {
+                        "id": "id_16",
+                        "label": "6",
+                        "type": "pwm"
+                    },
+                    {
+                        "id": "id_17",
+                        "label": "9",
+                        "type": "pwm"
+                    },
+                    {
+                        "id": "id_18",
+                        "label": "10",
+                        "type": "pwm"
+                    },
+                    {
+                        "id": "id_19",
+                        "label": "11",
+                        "type": "pwm"
+                    }
+                ]
+            }
+        },
+        {
+            "device": {
+                "id": "id_20",
+                "label": "led",
+                "type": "device",
+                "subType": "led",
+                "pins": [
+                    {
+                        "id": "id_21",
+                        "label": "D0",
+                        "type": "digital"
+                    }
+                ]
+            }
+        },
+        {
+            "relationship_device_board": {
+                "id": "id_22",
+                "pinDevice": "id_21",
+                "pinBoard": "id_3"
+            }
+        }
+    ],
+    "dummy": [],
+    "machine": [
+        {
+            "state": {
+                "id": "id_23",
+                "type": "initialState",
+                "label": "off"
+            }
+        },
+        {
+            "state": {
+                "id": "id_24",
+                "type": "state",
+                "label": "on"
+            }
+        },
+        {
+            "transition": {
+                "id": "id_25",
+                "label": "off_on",
+                "source": "id_23",
+                "target": "id_24"
+            }
+        },
+        {
+            "transition": {
+                "id": "id_26",
+                "label": "on_off",
+                "source": "id_24",
+                "target": "id_23"
+            }
+        }
+    ],
+    "binding": [
+        {
+            "variable": {
+                "id": "id_27",
+                "label": "var_on",
+                "type": "analogVariable",
+                "value": "0"
+            }
+        },
+        {
+            "activity": {
+                "id": "id_28",
+                "label": "activity_off"
+            }
+        },
+        {
+            "activity": {
+                "id": "id_29",
+                "label": "activity_on"
+            }
+        },
+        {
+            "writeAction": {
+                "id": "id_30",
+                "label": "led_on",
+                "type": "writeAction",
+                "subType": "on",
+                "arguments": []
+            }
+        },
+        {
+            "writeAction": {
+                "id": "id_31",
+                "label": "led_off",
+                "type": "writeAction",
+                "subType": "off",
+                "arguments": []
+            }
+        },
+        {
+            "predicate": {
+                "id": "id_32",
+                "label": "to_off_on",
+                "operator": "="
+            }
+        },
+        {
+            "predicate": {
+                "id": "id_33",
+                "label": "to_on_off",
+                "operator": "!="
+            }
+        },
+        {
+            "logicalOperator": {
+                "id": "id_34",
+                "label": "op",
+                "value": "SINGLE"
+            }
+        },
+        {
+            "logicalOperator": {
+                "id": "id_35",
+                "label": "op1",
+                "value": "SINGLE"
+            }
+        },
+        {
+            "relationship_state_activity": {
+                "id": "id_36",
+                "state": "id_23",
+                "beginPhase": [],
+                "whilePhase": [
+                    {
+                        "activity": "id_28",
+                        "execution": "Synchronous",
+                        "time": "0"
+                    }
+                ],
+                "endPhase": []
+            }
+        },
+        {
+            "relationship_state_activity": {
+                "id": "id_37",
+                "state": "id_24",
+                "beginPhase": [],
+                "whilePhase": [
+                    {
+                        "activity": "id_29",
+                        "execution": "Synchronous",
+                        "time": "0"
+                    }
+                ],
+                "endPhase": []
+            }
+        },
+        {
+            "relationship_activity_action": {
+                "id": "id_38",
+                "activity": "id_28",
+                "actions": [
+                    {
+                        "action": "id_31",
+                        "actionType": "writeAction",
+                        "execution": "Synchronous",
+                        "time": "0"
+                    }
+                ]
+            }
+        },
+        {
+            "relationship_activity_action": {
+                "id": "id_39",
+                "activity": "id_29",
+                "actions": [
+                    {
+                        "action": "id_30",
+                        "actionType": "writeAction",
+                        "execution": "Synchronous",
+                        "time": "0"
+                    }
+                ]
+            }
+        },
+        {
+            "relationship_device_action": {
+                "id": "id_40",
+                "device": "id_20",
+                "action": "id_30",
+                "actionType": "writeAction"
+            }
+        },
+        {
+            "relationship_device_action": {
+                "id": "id_41",
+                "device": "id_20",
+                "action": "id_31",
+                "actionType": "writeAction"
+            }
+        },
+        {
+            "relationship_logicalOperator_transition": {
+                "id": "id_42",
+                "logicalOperator": "id_34",
+                "transition": "id_25"
+            }
+        },
+        {
+            "relationship_logicalOperator_transition": {
+                "id": "id_43",
+                "logicalOperator": "id_35",
+                "transition": "id_26"
+            }
+        },
+        {
+            "relationship_logicalOperator_predicate": {
+                "id": "id_44",
+                "logicalOperator": "id_34",
+                "predicates": [
+                    {
+                        "predicate": "id_32"
+                    }
+                ]
+            }
+        },
+        {
+            "relationship_logicalOperator_predicate": {
+                "id": "id_45",
+                "logicalOperator": "id_35",
+                "predicates": [
+                    {
+                        "predicate": "id_33"
+                    }
+                ]
+            }
+        },
+        {
+            "relationship_predicate_variables": {
+                "id": "id_46",
+                "predicate": "id_32",
+                "primaryVariable": "id_27",
+                "secondaryVariable": "id_27"
+            }
+        },
+        {
+            "relationship_predicate_variables": {
+                "id": "id_47",
+                "predicate": "id_33",
+                "primaryVariable": "id_27",
+                "secondaryVariable": "id_27"
+            }
+        }
+    ],
+    "control": []
+}

@@ -394,9 +394,10 @@ public class DeviceProcessor {
 
         String finalResultLabel = resultLabel;
         data.getSketchFunction().addInstruction(codeBuffer -> {
-            if (data instanceof WriteActionData)
+            if (data instanceof WriteActionData) {
+                System.out.println(variables);
                 codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
-            else if (finalResultLabel != null && !finalResultLabel.isEmpty())
+            } else if (finalResultLabel != null && !finalResultLabel.isEmpty())
                 codeBuffer.appendLine(sdkFunction.createCallAndSave(finalResultLabel, directives, variables, true));
             else
                 codeBuffer.appendLine(sdkFunction.createCall(directives, variables, true));
